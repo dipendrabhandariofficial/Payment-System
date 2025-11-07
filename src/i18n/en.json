@@ -1,0 +1,22 @@
+{
+  "dashboard": {
+    "title": "Welcome to the Dashboard",
+    "description": "Overview of Payment Management System",
+    "students": " Total Students",
+    "collection": "Total Collection",
+    "pending": "Total Pending",
+    "recentpayments": "Recent payments",
+    "paymenttrends" : "Payment trends",
+    "studentdue" :"Student with Due",
+    "period": "Period"
+
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "students": "Students",
+    "payments": "Payments",
+    "addpayment": "Add Payment",
+    "reports": "Reports"
+  }
+
+}
