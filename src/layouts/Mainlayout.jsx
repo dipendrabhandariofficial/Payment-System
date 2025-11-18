@@ -27,7 +27,7 @@ const MainLayout = () => {
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         {/* Content Area (only this scrolls) */}
-        <main className="flex-1 overflow-y-auto p-6 transition-all duration-300 ease-in-out">
+        <main className="flex-1 overflow-y-auto p-6 transition-all duration-300 ease-in-out *:">
           <Outlet />
         </main>
       </div>

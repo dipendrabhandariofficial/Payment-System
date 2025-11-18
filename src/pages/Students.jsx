@@ -1,31 +1,66 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../layouts/Navbar";
-import Sidebar from "../layouts/Sidebar";
-import { getStudents, addStudent, deleteStudent } from "../services/api";
-import { Plus, Trash2, Search } from "lucide-react";
+import PageLayout from "../components/PageLayout";
+import Modal from "../components/Modal";
+import StudentForm from "../components/StudentForm";
+import StudentViewModal from "../components/StudentViewModal";
+import ActionMenu from "../components/ActionMenu";
+import DataTable from "../components/DataTable";
+import MessageAlert from "../components/MessageAlert";
+import LoadingSpinner from "../components/LoadingSpinner";
 import SearchBar from "../components/Search";
-import { EllipsisVertical } from "lucide-react";
-import { Button } from "../components/button/Button";
+import {
+  getStudents,
+  addStudent,
+  updateStudent,
+  deleteStudent,
+} from "../services/api";
+import { Plus, User, Edit, Loader2 } from "lucide-react";
+import {
+  courses as initialCourses,
+  generateSemesterFees,
+} from "../data/courses";
 
 const Students = () => {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     rollNumber: "",
     email: "",
     phone: "",
+    address: "",
+    guardianName: "",
+    guardianPhone: "",
+    guardianRelation: "",
+    admissionDate: new Date().toISOString().split("T")[0],
+    courseId: "",
     course: "",
-    semester: "",
+    semester: "1",
     totalFees: "",
+    semesterFees: [],
   });
+  const [selectedCourse, setSelectedCourse] = useState();
 
   useEffect(() => {
     fetchStudents();
   }, []);
+
+  // Get courses from localStorage or use initial courses
+  const getCourses = () => {
+    const savedCourses = localStorage.getItem("courses");
+    return savedCourses ? JSON.parse(savedCourses) : initialCourses;
+  };
+
+  const courses = getCourses();
 
   useEffect(() => {
     const filtered = students.filter(
@@ -50,273 +85,563 @@ const Students = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // Handle course selection from dropdown
+    if (name === "courseId") {
+      const selectedId = String(value);
+
+      const course = courses.find((c) => c.id === selectedId);
+
+      if (course) {
+        setSelectedCourse(course);
+
+        const semesterFees = generateSemesterFees(
+          course,
+          formData.admissionDate || new Date().toISOString().split("T")[0]
+        );
+
+        setFormData({
+          ...formData,
+          courseId: selectedId,
+          course: course.name,
+          semester: formData.semester || "1",
+          totalFees: String(course.totalFees),
+          semesterFees,
+        });
+      } else {
+        setSelectedCourse(null);
+        setFormData({
+          ...formData,
+          courseId: "",
+          course: "",
+          totalFees: "",
+          semesterFees: [],
+        });
+      }
+    } else if (name === "admissionDate" && selectedCourse) {
+      // Regenerate semester fees if admission date changes and course is selected
+      const semesterFees = generateSemesterFees(selectedCourse, value);
+      setFormData({ ...formData, [name]: value, semesterFees });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess(false);
+    setSubmitting(true);
+
+    // Validate course selection
+    if (!formData.courseId) {
+      setError("Please select a course before adding the student.");
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const studentData = {
         ...formData,
+        courseId: formData.courseId,
         totalFees: parseFloat(formData.totalFees),
         paidFees: 0,
         pendingFees: parseFloat(formData.totalFees),
+        semesterFees: formData.semesterFees || [],
       };
+
       await addStudent(studentData);
+      setSuccess(true);
       fetchStudents();
+
+      // Reset form and close modal after a short delay
+      setTimeout(() => {
+        setShowModal(false);
+        setFormData({
+          name: "",
+          rollNumber: "",
+          email: "",
+          phone: "",
+          address: "",
+          guardianName: "",
+          guardianPhone: "",
+          guardianRelation: "",
+          admissionDate: new Date().toISOString().split("T")[0],
+          courseId: "",
+          course: "",
+          semester: "1",
+          totalFees: "",
+          semesterFees: [],
+        });
+        setSelectedCourse(null);
+        setSuccess(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error adding student:", error);
+      setError("Failed to add student. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    if (!submitting) {
       setShowModal(false);
       setFormData({
         name: "",
         rollNumber: "",
         email: "",
         phone: "",
+        address: "",
+        guardianName: "",
+        guardianPhone: "",
+        guardianRelation: "",
+        admissionDate: new Date().toISOString().split("T")[0],
+        courseId: "",
         course: "",
-        semester: "",
+        semester: "1",
         totalFees: "",
+        semesterFees: [],
       });
-    } catch (error) {
-      console.error("Error adding student:", error);
+      setSelectedCourse(null);
+      setError("");
+      setSuccess(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this student?")) {
+  const handleView = (student) => {
+    setSelectedStudent(student);
+    setShowViewModal(true);
+  };
+
+  const handleEdit = (student) => {
+    setSelectedStudent(student);
+
+    // Check if student has a valid courseId
+    if (!student.courseId) {
+      setError(
+        "This student was added without a course. Please select a course to update."
+      );
+    }
+
+    // Find course if courseId exists
+    const studentCourse = student.courseId
+      ? courses.find((c) => c.id === student.courseId)
+      : null;
+    if (studentCourse) {
+      setSelectedCourse(studentCourse);
+    } else {
+      setSelectedCourse(null);
+    }
+
+    setFormData({
+      name: student.name,
+      rollNumber: student.rollNumber,
+      email: student.email,
+      phone: student.phone,
+      address: student.address || "",
+      guardianName: student.guardianName || "",
+      guardianPhone: student.guardianPhone || "",
+      guardianRelation: student.guardianRelation || "",
+      admissionDate:
+        student.admissionDate || new Date().toISOString().split("T")[0],
+      courseId: student.courseId || "",
+      course: student.course || "",
+      semester: student.semester || "1",
+      totalFees: student.totalFees.toString(),
+      semesterFees: student.semesterFees || [],
+    });
+    setShowEditModal(true);
+  };
+
+  const handleDelete = async (student) => {
+    if (window.confirm(`Are you sure you want to delete ${student.name}?`)) {
       try {
-        await deleteStudent(id);
+        await deleteStudent(student.id);
         fetchStudents();
       } catch (error) {
         console.error("Error deleting student:", error);
+        setError("Failed to delete student. Please try again.");
       }
     }
   };
 
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess(false);
+    setSubmitting(true);
+
+    // Validate course selection
+    if (!formData.courseId) {
+      setError("Please select a course before updating the student.");
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      const studentData = {
+        ...formData,
+        courseId: formData.courseId,
+        totalFees: parseFloat(formData.totalFees),
+        paidFees: selectedStudent.paidFees || 0,
+        pendingFees: Math.max(
+          0,
+          parseFloat(formData.totalFees) - (selectedStudent.paidFees || 0)
+        ),
+        semesterFees: formData.semesterFees || [],
+      };
+
+      await updateStudent(selectedStudent.id, studentData);
+      setSuccess(true);
+      fetchStudents();
+
+      setTimeout(() => {
+        setShowEditModal(false);
+        setSelectedStudent(null);
+        setSelectedCourse(null);
+        setFormData({
+          name: "",
+          rollNumber: "",
+          email: "",
+          phone: "",
+          address: "",
+          guardianName: "",
+          guardianPhone: "",
+          guardianRelation: "",
+          admissionDate: new Date().toISOString().split("T")[0],
+          courseId: "",
+          course: "",
+          semester: "1",
+          totalFees: "",
+          semesterFees: [],
+        });
+        setSuccess(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Error updating student:", error);
+      setError("Failed to update student. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCloseEditModal = () => {
+    if (!submitting) {
+      setShowEditModal(false);
+      setSelectedStudent(null);
+      setSelectedCourse(null);
+      setFormData({
+        name: "",
+        rollNumber: "",
+        email: "",
+        phone: "",
+        address: "",
+        guardianName: "",
+        guardianPhone: "",
+        guardianRelation: "",
+        admissionDate: new Date().toISOString().split("T")[0],
+        courseId: "",
+        course: "",
+        semester: "1",
+        totalFees: "",
+        semesterFees: [],
+      });
+      setError("");
+      setSuccess(false);
+    }
+  };
+
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading students..." />;
   }
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const tableColumns = [
+    "Roll Number",
+    "Name",
+    "Course",
+    "Semester",
+    "Total Fees",
+    "Paid",
+    "Pending",
+    "Actions",
+  ];
+
   return (
-    <div className="flex flex-col h-screen w-full">
-        <main className="flex-1 bg-gray-100 ">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Students</h1>
-
-            <Button 
-              leftIcon={<Plus className="w-5 h-5" />}
-              children={"Add Students"}
-              onClick={() => setShowModal(true)}
-            />
-          </div>
-
-          <div className="bg-white rounded-2xl p-6">
-            <SearchBar
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              placeholder="Search by name, roll number, or course..."
-              className="mb-4"
-            />
-
-            <div className="bg-white rounded-lg shadow-md">
-              <div className="">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Roll Number
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Course
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Semester
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total Fees
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Paid
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Pending
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredStudents.map((student) => (
-                      <tr key={student.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {student.rollNumber}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {student.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {student.course}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {student.semester}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ₹{student.totalFees}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
-                          ₹{student.paidFees}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                          ₹{student.pendingFees}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <button
-                            onClick={() => handleDelete(student.id)}
-                            className="text-gray-800-800 hover:text-gray-900   "
-                          >
-                            <EllipsisVertical className="w-5 h-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {showModal && (
-            <div className="fixed inset-0 bg-[#8F96A2] flex items-center justify-center z-50">
-              <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-2xl">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-                  Add New Student
-                </h2>
-
-                <form
-                  onSubmit={handleSubmit}
-                  className="grid grid-cols-2 gap-5"
-                >
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Roll No.
-                    </label>
-                    <input
-                      type="text"
-                      name="rollNumber"
-                      value={formData.rollNumber}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Course
-                    </label>
-                    <input
-                      type="text"
-                      name="course"
-                      value={formData.course}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Semester
-                    </label>
-                    <input
-                      type="text"
-                      name="semester"
-                      value={formData.semester}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Total Fees
-                    </label>
-                    <input
-                      type="number"
-                      name="totalFees"
-                      value={formData.totalFees}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div className="col-span-2 flex gap-4 mt-4">
-                    <Button type="submit" className="flex-1" > Add Students</Button> 
-                    <Button
-                      type="button"
-                      onClick={() => setShowModal(false)}
-                      className="flex-1"
-                      colorScheme="gray"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-        </main>
+    <PageLayout
+      title="Students"
+      subtitle={"Get the information of the students"}
+      actionButton={
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-gray-800 dark:bg-gray-500 text-white rounded-lg cursor-pointer hover:bg-gray-600 transition-colors font-medium"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Add Student</span>
+        </button>
+      }
+    >
+      <div className="bg-white  rounded-lg shadow-sm border border-gray-200 p-6 mb-6 dark:bg-gray-800 dark:border-0 ">
+        <SearchBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          placeholder="Search by name, roll number, or course..."
+          className="lg:w-[50%] "
+        />
       </div>
 
+      <DataTable
+        columns={tableColumns}
+        data={filteredStudents}
+        loading={loading}
+        emptyMessage="No students found"
+        renderRow={(student) => (
+          <tr
+            key={student.id}
+            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+              {student.rollNumber}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              {student.name}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+              {student.course}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+              {student.semester}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              {formatCurrency(student.totalFees || 0)}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400">
+              {formatCurrency(student.paidFees || 0)}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              {formatCurrency(student.pendingFees || 0)}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm">
+              <ActionMenu
+                onView={() => handleView(student)}
+                onEdit={() => handleEdit(student)}
+                onDelete={() => handleDelete(student)}
+                className="right-12 -bottom-3.5"
+              />
+            </td>
+          </tr>
+        )}
+        renderCard={(student) => (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {/* Header Section with Gradient */}
+            <div className="bg-linear-to-r from-gray-500 to-gray-600 p-4 text-white">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg mb-1">{student.name}</h3>
+                  <div className="flex items-center gap-4 text-sm text-blue-100">
+                    <span className="flex items-center gap-1">
+                      <span className="font-medium">Roll:</span>{" "}
+                      {student.rollNumber}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="font-medium">Sem:</span>{" "}
+                      {student.semester}
+                    </span>
+                  </div>
+                  
+                </div>
+              
+              <ActionMenu
+                onView={() => handleView(student)}
+                onEdit={() => handleEdit(student)}
+                onDelete={() => handleDelete(student)}
+              />
+          
+              </div>
+            </div>
+
+            {/* Course Information */}
+            <div className="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Course
+              </p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                {student.course}
+              </p>
+            </div>
+
+            {/* Fee Information */}
+            <div className="p-4 space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Total Fees
+                </span>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                  {formatCurrency(student.totalFees || 0)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Paid Fees
+                </span>
+                <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                  {formatCurrency(student.paidFees || 0)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Pending Fees
+                </span>
+                <span
+                  className={`text-sm font-bold ${
+                    (student.pendingFees || 0) > 0
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-green-600 dark:text-green-400"
+                  }`}
+                >
+                  {formatCurrency(student.pendingFees || 0)}
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+           
+          </div>
+        )}
+      />
+
+      {/* Add Student Modal */}
+      <Modal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        title="Add New Student"
+        subtitle="Fill in the student information below"
+        icon={User}
+        disabled={submitting}
+      >
+        <form onSubmit={handleSubmit}>
+          <MessageAlert
+            type="success"
+            message={success ? "Student added successfully!" : ""}
+          />
+          <MessageAlert type="error" message={error} />
+
+          <StudentForm
+            formData={formData}
+            onChange={handleChange}
+            courses={courses}
+            selectedCourse={selectedCourse}
+            setSelectedCourse={setSelectedCourse}
+            submitting={submitting}
+          />
+
+          <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              disabled={submitting}
+              className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-6 py-2.5 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-5 h-5" />
+                  Add Student
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* View Student Modal */}
+      <StudentViewModal
+        student={selectedStudent}
+        isOpen={showViewModal}
+        onClose={() => setShowViewModal(false)}
+      />
+
+      {/* Edit Student Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={handleCloseEditModal}
+        title="Edit Student"
+        subtitle={
+          selectedStudent
+            ? `Update ${selectedStudent.name}'s information`
+            : "Update student information"
+        }
+        icon={Edit}
+        disabled={submitting}
+      >
+        <form onSubmit={handleUpdateSubmit}>
+          <MessageAlert
+            type="success"
+            message={success ? "Student updated successfully!" : ""}
+          />
+          <MessageAlert type="error" message={error} />
+
+          <StudentForm
+            formData={formData}
+            onChange={handleChange}
+            courses={courses}
+            selectedCourse={selectedCourse}
+            setSelectedCourse={setSelectedCourse}
+            submitting={submitting}
+          />
+
+          <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={handleCloseEditModal}
+              disabled={submitting}
+              className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-6 py-2.5 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Edit className="w-5 h-5" />
+                  Update Student
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </PageLayout>
   );
 };
 

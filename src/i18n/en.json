@@ -1,22 +1,33 @@
 {
+
   "dashboard": {
     "title": "Welcome to the Dashboard",
-    "description": "Overview of Payment Management System",
-    "students": " Total Students",
-    "collection": "Total Collection",
+    "subtitle": "Overview of your Fee Management System",
+    "students": "Total Students",
+    "collection": "Total Collected",
     "pending": "Total Pending",
-    "recentpayments": "Recent payments",
-    "paymenttrends" : "Payment trends",
-    "studentdue" :"Student with Due",
-    "period": "Period"
-
+    "recentpayments": "Recent Payments",
+    "paymenttrends": "Payment Trends",
+    "studentdue": "Students with Due",
+    "period": "Period",
+    "activein": "Active in",
+    "in": "In",
+    "outstandingfees": "Outstanding Fees",
+    
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "yearly": "Yearly",
+    "showingstats": "Showing stats for",
+    "nostats": "No recent payments"
   },
   "sidebar": {
     "dashboard": "Dashboard",
     "students": "Students",
     "payments": "Payments",
     "addpayment": "Add Payment",
-    "reports": "Reports"
+    "reports": "Reports",
+    "courses": "Courses",
+    "duepayments": "Due Payments"
   }
 
 }

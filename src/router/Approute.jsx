@@ -1,8 +1,8 @@
 // src/MainRouter.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import ProtectedRoute from "../components/ProtectedRoute";
-import PublicRoute from "../components/PublicRoute";
+import ProtectedRoute from "./ProtectedRoute";
+import PublicRoute from "./PublicRoute";
 import MainLayout from "../layouts/Mainlayout";
 
 import Login from "../pages/Login";
@@ -12,6 +12,8 @@ import Students from "../pages/Students";
 import Payments from "../pages/Payments";
 import AddPayment from "../pages/AddPayement";
 import Reports from "../pages/Reports";
+import Courses from "../pages/Courses";
+import DuePayments from "../pages/DuePayments";
 
 function Approute() {
   return (
@@ -50,6 +52,8 @@ function Approute() {
         <Route path="/payments" element={<Payments />} />
         <Route path="/add-payment" element={<AddPayment />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/courses" element={<Courses/>} />
+        <Route path="/due-payments" element={<DuePayments />} />
       </Route>
     </Routes>
   );

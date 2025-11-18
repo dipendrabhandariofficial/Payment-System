@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../layouts/Navbar";
-import Sidebar from "../layouts/Sidebar";
 import { getStudents, getPayments } from "../services/api";
-import { Download, FileText } from "lucide-react";
+import {
+  Download,
+  Users,
+  DollarSign,
+  AlertCircle,
+  TrendingUp,
+} from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   PieChart,
   Pie,
@@ -12,10 +18,13 @@ import {
   Tooltip,
 } from "recharts";
 import { Button } from "../components/button/Button";
+import Loader from "../components/Loader";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const Reports = () => {
   const [stats, setStats] = useState({
     totalStudents: 0,
+    studentsWithPayments: 0,
     totalCollected: 0,
     totalPending: 0,
     paymentsByMethod: [],
@@ -32,7 +41,14 @@ const Reports = () => {
       const payments = await getPayments();
 
       const totalCollected = payments.reduce((sum, p) => sum + p.amount, 0);
-      const totalPending = students.reduce((sum, s) => sum + s.pendingFees, 0);
+      const totalPending = students.reduce(
+        (sum, s) => sum + (s.pendingFees || 0),
+        0
+      );
+
+      // Count unique students who made payments
+      const studentsWithPayments = new Set(payments.map((p) => p.studentId))
+        .size;
 
       const methodCount = payments.reduce((acc, payment) => {
         acc[payment.paymentMethod] =
@@ -49,6 +65,7 @@ const Reports = () => {
 
       setStats({
         totalStudents: students.length,
+        studentsWithPayments,
         totalCollected,
         totalPending,
         paymentsByMethod,
@@ -63,160 +80,352 @@ const Reports = () => {
   const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
 
   const downloadReport = () => {
-    const reportData = `
-Student Fee Payment Report
-=========================
-Total Students: ${stats.totalStudents}
-Total Collected: ₹${stats.totalCollected}
-Total Pending: ₹${stats.totalPending}
+    const doc = new jsPDF();
+    const date = new Date().toLocaleString();
 
-Payment Methods Breakdown:
-${stats.paymentsByMethod.map((m) => `${m.name}: ₹${m.value}`).join("\n")}
-    `;
+    // === HEADER ===
+    const logoUrl = "logo.png";
 
-    const blob = new Blob([reportData], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "fee-report.txt";
-    a.click();
+    // Add logo
+    const imgWidth = 25;
+    const imgHeight = 25;
+    try {
+      doc.addImage(logoUrl, "PNG", 14, 10, imgWidth, imgHeight);
+    } catch (error) {
+      console.log("Logo not found, skipping...");
+    }
+
+    // Add report title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Student Fee Payment Report", 105, 20, { align: "center" });
+
+    // Subheading
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(`Generated on: ${date}`, 105, 27, { align: "center" });
+
+    // Line separator
+    doc.setDrawColor(60, 141, 188);
+    doc.line(14, 35, 196, 35);
+
+    // === SUMMARY SECTION ===
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("Summary", 14, 45);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(`Total Students Enrolled: ${stats.totalStudents}`, 14, 55);
+    doc.text(`Students with Payments: ${stats.studentsWithPayments}`, 14, 62);
+    doc.text(
+      `Total Collected: ₹${stats.totalCollected.toLocaleString("en-IN")}`,
+      14,
+      69
+    );
+    doc.text(
+      `Total Pending: ₹${stats.totalPending.toLocaleString("en-IN")}`,
+      14,
+      76
+    );
+
+    const collectionRate =
+      stats.totalCollected > 0
+        ? (
+            (stats.totalCollected /
+              (stats.totalCollected + stats.totalPending)) *
+            100
+          ).toFixed(2)
+        : 0;
+    doc.text(`Collection Rate: ${collectionRate}%`, 14, 83);
+
+    // === TABLE ===
+    const tableData = stats.paymentsByMethod.map((m) => [
+      m.name,
+      `₹${m.value.toLocaleString("en-IN")}`,
+    ]);
+
+    autoTable(doc, {
+      startY: 95,
+      head: [["Payment Method", "Amount"]],
+      body: tableData,
+      theme: "grid",
+      styles: { halign: "center", fontSize: 11 },
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        halign: "center",
+      },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      margin: { left: 14, right: 14 },
+    });
+
+    // === FOOTER ===
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+
+      doc.setFontSize(9);
+      doc.setTextColor(150);
+      doc.text(`Generated on ${date}`, 14, pageHeight - 10);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 30, pageHeight - 10);
+    }
+
+    // Save file
+    doc.save(
+      `Fee_Payment_Report_${new Date().toISOString().split("T")[0]}.pdf`
+    );
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount);
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <LoadingSpinner message="Getting Reports Data " />;
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="flex flex-1 ">
-        <main className="flex-1 bg-gray-100 p-6">
+    <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="flex flex-1">
+        <main className="flex-1 bg-gray-100 dark:bg-gray-900 p-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">
-              Reports & Analytics
-            </h1>
-             <Button leftIcon={<Download/>} colorScheme="green" onClick={downloadReport}>Download</Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+                Reports & Analytics
+              </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Comprehensive overview of all-time statistics
+              </p>
+            </div>
+            <Button
+              colorScheme="green"
+              onClick={downloadReport}
+              leftIcon={<Download />}
+            >
+              Download PDF
+            </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm">Total Students</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                    Total Enrolled
+                  </p>
                   <p className="text-3xl font-bold text-blue-600">
                     {stats.totalStudents}
                   </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    All students
+                  </p>
                 </div>
-                <FileText className="w-12 h-12 text-blue-600" />
+                <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
+                  <Users className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm">Total Collected</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                    With Payments
+                  </p>
+                  <p className="text-3xl font-bold text-purple-600">
+                    {stats.studentsWithPayments}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Made at least 1 payment
+                  </p>
+                </div>
+                <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-lg">
+                  <TrendingUp className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                    Total Collected
+                  </p>
                   <p className="text-3xl font-bold text-green-600">
-                    ₹{stats.totalCollected}
+                    {formatCurrency(stats.totalCollected)}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    All-time revenue
                   </p>
                 </div>
-                <FileText className="w-12 h-12 text-green-600" />
+                <div className="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
+                  <DollarSign className="w-8 h-8 text-green-600 dark:text-green-400" />
+                </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm">Total Pending</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                    Total Pending
+                  </p>
                   <p className="text-3xl font-bold text-red-600">
-                    ₹{stats.totalPending}
+                    {formatCurrency(stats.totalPending)}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Outstanding fees
                   </p>
                 </div>
-                <FileText className="w-12 h-12 text-red-600" />
+                <div className="bg-red-100 dark:bg-red-900 p-3 rounded-lg">
+                  <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="flex w-full gap-2">
+          <div className="flex w-full gap-6">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex-2 h-[80vh] border border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+                Payment Methods Distribution
+              </h2>
+              {stats.paymentsByMethod.length > 0 ? (
+                <ResponsiveContainer width="100%" height={400}>
+                  <PieChart>
+                    <Pie
+                      data={stats.paymentsByMethod}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) =>
+                        `${name} ${(percent * 100).toFixed(0)}%`
+                      }
+                      outerRadius={120}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {stats.paymentsByMethod.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => formatCurrency(value)} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[400px]">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No payment data available
+                  </p>
+                </div>
+              )}
+            </div>
 
-          <div className="bg-white p-6  rounded-lg shadow-md flex-2 h-[80vh]">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Payment Methods Distribution
-            </h2>
-            <ResponsiveContainer width="100%" height={400}>
-              <PieChart>
-                <Pie
-                  data={stats.paymentsByMethod}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
-                  outerRadius={120}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {stats.paymentsByMethod.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex-1 h-[80vh] border border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+                Financial Summary
+              </h2>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">
+                    Collection Rate
+                  </span>
+                  <span className="text-lg font-semibold text-blue-600">
+                    {stats.totalCollected > 0
+                      ? (
+                          (stats.totalCollected /
+                            (stats.totalCollected + stats.totalPending)) *
+                          100
+                        ).toFixed(2)
+                      : 0}
+                    %
+                  </span>
+                </div>
 
-          <div className=" bg-white p-6 rounded-lg shadow-md flex-1 h-[80vh]">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Summary
-            </h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                <span className="text-gray-700">Collection Rate</span>
-                <span className="text-lg font-semibold text-blue-600">
-                  {stats.totalCollected > 0
-                    ? (
-                        (stats.totalCollected /
-                          (stats.totalCollected + stats.totalPending)) *
-                        100
-                      ).toFixed(2)
-                    : 0}
-                  %
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                <span className="text-gray-700">Pending Rate</span>
-                <span className="text-lg font-semibold text-red-600">
-                  {stats.totalPending > 0
-                    ? (
-                        (stats.totalPending /
-                          (stats.totalCollected + stats.totalPending)) *
-                        100
-                      ).toFixed(2)
-                    : 0}
-                  %
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                <span className="text-gray-700">Average Fee per Student</span>
-                <span className="text-lg font-semibold text-green-600">
-                  ₹
-                  {stats.totalStudents > 0
-                    ? Math.round(
-                        (stats.totalCollected + stats.totalPending) /
-                          stats.totalStudents
-                      )
-                    : 0}
-                </span>
+                <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">
+                    Pending Rate
+                  </span>
+                  <span className="text-lg font-semibold text-red-600">
+                    {stats.totalPending > 0
+                      ? (
+                          (stats.totalPending /
+                            (stats.totalCollected + stats.totalPending)) *
+                          100
+                        ).toFixed(2)
+                      : 0}
+                    %
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">
+                    Avg Fee per Student
+                  </span>
+                  <span className="text-lg font-semibold text-green-600">
+                    {formatCurrency(
+                      stats.totalStudents > 0
+                        ? Math.round(
+                            (stats.totalCollected + stats.totalPending) /
+                              stats.totalStudents
+                          )
+                        : 0
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">
+                    Payment Coverage
+                  </span>
+                  <span className="text-lg font-semibold text-purple-600">
+                    {stats.totalStudents > 0
+                      ? (
+                          (stats.studentsWithPayments / stats.totalStudents) *
+                          100
+                        ).toFixed(1)
+                      : 0}
+                    %
+                  </span>
+                </div>
+
+                <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
+                    Quick Stats
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Total Revenue:
+                      </span>
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">
+                        {formatCurrency(
+                          stats.totalCollected + stats.totalPending
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Students without payments:
+                      </span>
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">
+                        {stats.totalStudents - stats.studentsWithPayments}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
           </div>
         </main>
       </div>

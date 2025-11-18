@@ -1,17 +1,19 @@
-// src/App.jsx
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
+import { I18nextProvider } from "react-i18next";
 import { AuthProvider } from "./context/AuthContext";
 import Approute from "./router/Approute";
-import "./i18n";
+import i18n from "./i18n";
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Approute />
-      </Router>
-    </AuthProvider>
+    <I18nextProvider i18n={i18n}>
+      <AuthProvider>
+        <Router>
+          <Approute />
+        </Router>
+      </AuthProvider>
+    </I18nextProvider>
   );
 }
 

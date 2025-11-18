@@ -13,219 +13,157 @@
       "email": "dipendrabhandari0000@gmail.com",
       "password": "123456",
       "role": "user"
-    },
-    {
-      "id": "cc0c",
-      "name": "Dipendra Bhandari",
-      "username": "hello",
-      "password": "1234567"
     }
   ],
   "students": [
     {
-      "id": "cb15",
-      "name": "Dipendra Bhandari",
-      "rollNumber": "T1",
-      "email": "dipendrabhandari0000@gmail.com",
-      "phone": "9804365848",
-      "course": "Science",
-      "semester": "8",
-      "totalFees": 50000,
-      "paidFees": 50000,
-      "pendingFees": 0
+      "id": "3a65",
+      "name": "Hari",
+      "rollNumber": "1234",
+      "email": "hari@gmail.com",
+      "phone": "1234",
+      "address": "",
+      "guardianName": "",
+      "guardianPhone": "",
+      "guardianRelation": "",
+      "admissionDate": "2025-11-15",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "2",
+      "totalFees": 300000,
+      "semesterFees": [
+        {
+          "semester": "1",
+          "amount": 50000,
+          "dueDate": "2025-11-15",
+          "paid": false
+        },
+        {
+          "semester": "2",
+          "amount": 50000,
+          "dueDate": "2026-05-15",
+          "paid": false
+        },
+        {
+          "semester": "3",
+          "amount": 50000,
+          "dueDate": "2026-11-15",
+          "paid": false
+        },
+        {
+          "semester": "4",
+          "amount": 50000,
+          "dueDate": "2027-05-15",
+          "paid": false
+        },
+        {
+          "semester": "5",
+          "amount": 50000,
+          "dueDate": "2027-11-15",
+          "paid": false
+        },
+        {
+          "semester": "6",
+          "amount": 50000,
+          "dueDate": "2028-05-15",
+          "paid": false
+        }
+      ],
+      "paidFees": 151234,
+      "pendingFees": 148766
     },
     {
-      "id": "9acb",
-      "name": "Edward Pierce",
-      "rollNumber": "841",
-      "email": "peqeryqyqi@mailinator.com",
-      "phone": "+1 (961) 438-2336",
-      "course": "Eaque quod duis volu",
-      "semester": "Neque esse quis vit",
-      "totalFees": 52000,
-      "paidFees": 12622,
-      "pendingFees": 39378
-    },
-    {
-      "id": "4bf2",
-      "name": "Xyla Langley",
-      "rollNumber": "505",
-      "email": "jefitij@mailinator.com",
-      "phone": "+1 (263) 742-9684",
-      "course": "Cum non quis exceptu",
-      "semester": "Ipsa fuga Reprehen",
-      "totalFees": 17,
-      "paidFees": 10,
-      "pendingFees": 7
+      "name": "Dipendra ",
+      "rollNumber": "123",
+      "email": "dipendra@gmail.com",
+      "phone": "123456",
+      "address": "",
+      "guardianName": "",
+      "guardianPhone": "",
+      "guardianRelation": "",
+      "admissionDate": "2025-11-17",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "1",
+      "totalFees": 300000,
+      "semesterFees": [
+        {
+          "semester": "1",
+          "amount": 50000,
+          "dueDate": "2025-11-17",
+          "paid": false
+        },
+        {
+          "semester": "2",
+          "amount": 50000,
+          "dueDate": "2026-05-17",
+          "paid": false
+        },
+        {
+          "semester": "3",
+          "amount": 50000,
+          "dueDate": "2026-11-17",
+          "paid": false
+        },
+        {
+          "semester": "4",
+          "amount": 50000,
+          "dueDate": "2027-05-17",
+          "paid": false
+        },
+        {
+          "semester": "5",
+          "amount": 50000,
+          "dueDate": "2027-11-17",
+          "paid": false
+        },
+        {
+          "semester": "6",
+          "amount": 50000,
+          "dueDate": "2028-05-17",
+          "paid": false
+        }
+      ],
+      "paidFees": 0,
+      "pendingFees": 300000,
+      "id": "dc6c"
     }
   ],
   "payments": [
     {
-      "id": "c8cc",
-      "studentId": "cb15",
-      "studentName": "Dipendra Bhandari",
-      "rollNumber": "T1",
-      "amount": 39999,
-      "paymentDate": "2025-11-03",
+      "id": "9437",
+      "studentId": "3a65",
+      "studentName": "Hari",
+      "rollNumber": "1234",
+      "amount": 50000,
+      "paymentDate": "2025-11-15",
       "paymentMethod": "Cash",
-      "semester": "8",
-      "receiptNumber": "RCP1762194377203",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "2",
+      "receiptNumber": "RCP1763196327182",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
       "status": "Completed"
     },
     {
-      "id": "c8cc",
-      "studentId": "cb15",
-      "studentName": "Dipendra Bhandari",
-      "rollNumber": "T1",
-      "amount": 39999,
-      "paymentDate": "2025-10-03",
+      "id": "8118",
+      "studentId": "3a65",
+      "studentName": "Hari",
+      "rollNumber": "1234",
+      "amount": 50000,
+      "paymentDate": "2025-11-18",
       "paymentMethod": "Cash",
-      "semester": "8",
-      "receiptNumber": "RCP1762194377203",
-      "status": "Completed"
-    },
-    {
-      "id": "1cb9",
-      "studentId": "cb15",
-      "studentName": "Dipendra Bhandari",
-      "rollNumber": "T1",
-      "amount": 1,
-      "paymentDate": "2025-11-03",
-      "paymentMethod": "Cash",
-      "semester": "8",
-      "receiptNumber": "RCP1762194714809",
-      "status": "Completed"
-    },
-    {
-      "id": "a9a2",
-      "studentId": "9acb",
-      "studentName": "Edward Pierce",
-      "rollNumber": "841",
-      "amount": 1999,
-      "paymentDate": "2025-11-03",
-      "paymentMethod": "Cash",
-      "semester": "Neque esse quis vit",
-      "receiptNumber": "RCP1762195228885",
-      "status": "Completed"
-    },
-    {
-      "id": "5b6e",
-      "studentId": "cb15",
-      "studentName": "Dipendra Bhandari",
-      "rollNumber": "T1",
-      "amount": 9999,
-      "paymentDate": "2025-11-03",
-      "paymentMethod": "Cash",
-      "semester": "8",
-      "receiptNumber": "RCP1762195294254",
-      "status": "Completed"
-    },
-    {
-      "id": "c884",
-      "studentId": "cb15",
-      "studentName": "Dipendra Bhandari",
-      "rollNumber": "T1",
-      "amount": 1,
-      "paymentDate": "2025-11-03",
-      "paymentMethod": "Cash",
-      "semester": "8",
-      "receiptNumber": "RCP1762195456909",
-      "status": "Completed"
-    },
-    {
-      "id": "a2ba",
-      "studentId": "9acb",
-      "studentName": "Edward Pierce",
-      "rollNumber": "841",
-      "amount": 1,
-      "paymentDate": "2025-11-03",
-      "paymentMethod": "Cash",
-      "semester": "Neque esse quis vit",
-      "receiptNumber": "RCP1762195475439",
-      "status": "Completed"
-    },
-    {
-      "id": "e44a",
-      "studentId": "9acb",
-      "studentName": "Edward Pierce",
-      "rollNumber": "841",
-      "amount": 10000,
-      "paymentDate": "2025-11-03",
-      "paymentMethod": "Cash",
-      "semester": "Neque esse quis vit",
-      "receiptNumber": "RCP1762195506533",
-      "status": "Completed"
-    },
-    {
-      "id": "e3f8",
-      "studentId": "9acb",
-      "studentName": "Edward Pierce",
-      "rollNumber": "841",
-      "amount": 499,
-      "paymentDate": "2025-11-03",
-      "paymentMethod": "Cash",
-      "semester": "Neque esse quis vit",
-      "receiptNumber": "RCP1762195589159",
-      "status": "Completed"
-    },
-    {
-      "id": "5469",
-      "studentId": "9acb",
-      "studentName": "Edward Pierce",
-      "rollNumber": "841",
-      "amount": 123,
-      "paymentDate": "2025-11-04",
-      "paymentMethod": "Cash",
-      "semester": "Neque esse quis vit",
-      "receiptNumber": "RCP1762267614876",
-      "status": "Completed"
-    },
-    {
-      "id": "6cec",
-      "studentId": "4bf2",
-      "studentName": "Xyla Langley",
-      "rollNumber": "505",
-      "amount": 2,
-      "paymentDate": "2025-11-06",
-      "paymentMethod": "Cheque",
-      "semester": "Ipsa fuga Reprehen",
-      "receiptNumber": "RCP1762405955870",
-      "status": "Completed"
-    },
-    {
-      "id": "a64b",
-      "studentId": "4bf2",
-      "studentName": "Xyla Langley",
-      "rollNumber": "505",
-      "amount": 5,
-      "paymentDate": "2025-11-06",
-      "paymentMethod": "Card",
-      "semester": "Ipsa fuga Reprehen",
-      "receiptNumber": "RCP1762406160654",
-      "status": "Completed"
-    },
-    {
-      "id": "5c0e",
-      "studentId": "4bf2",
-      "studentName": "Xyla Langley",
-      "rollNumber": "505",
-      "amount": 3,
-      "paymentDate": "2025-11-06",
-      "paymentMethod": "Cheque",
-      "semester": "Ipsa fuga Reprehen",
-      "receiptNumber": "RCP1762406273811",
-      "status": "Completed"
-    },
-    {
-      "id": "0b78",
-      "studentId": null,
-      "studentName": "Dipendra Bhandari",
-      "rollNumber": "12",
-      "amount": 30000,
-      "paymentDate": "2025-11-06",
-      "paymentMethod": "Cash",
-      "semester": "3",
-      "receiptNumber": "RCP1762434202113",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "1",
+      "receiptNumber": "RCP1763447497972",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
       "status": "Completed"
     }
   ]

@@ -2,17 +2,21 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Loader from "../components/Loader";
 
-const PublicRoute = ({ children }) => {
-  const { user } = useAuth();
+export default function PublicRoute({ children }) {
+  const { user, loading } = useAuth(); 
 
-  // If user is already logged in, redirect to dashboard
+  // Prevent flicker before auth initializes
+  if (loading) {
+    return (
+      <Loader/>
+    )
+  }
+
   if (user) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Otherwise, allow access (for login/register)
   return children;
-};
-
-export default PublicRoute;
+}
