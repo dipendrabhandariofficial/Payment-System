@@ -21,6 +21,7 @@ import {
 } from "../data/courses";
 
 const Students = () => {
+  const hello = "hello";
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [loading, setLoading] = useState(true);
