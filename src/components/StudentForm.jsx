@@ -1,7 +1,17 @@
 import React from "react";
-import { User, Hash, Mail, Phone, BookOpen, GraduationCap, DollarSign, Info } from "lucide-react";
+import {
+  User,
+  Hash,
+  Mail,
+  Phone,
+  BookOpen,
+  GraduationCap,
+  DollarSign,
+  Info,
+} from "lucide-react";
 
 const StudentForm = ({
+  isEditMode = false,
   formData,
   onChange,
   courses,
@@ -50,20 +60,30 @@ const StudentForm = ({
           </div>
 
           <div className="relative group">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Roll Number <span className="text-red-500">*</span>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              Roll Number
             </label>
+
             <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-gray-600 transition-colors" />
+              <Hash
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400
+        group-focus-within:text-gray-600 transition-colors"
+              />
+
               <input
                 type="text"
                 name="rollNumber"
                 value={formData.rollNumber}
                 onChange={onChange}
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 bg-white transition-all duration-200"
-                placeholder="Enter roll number"
-                required
-                disabled={submitting}
+                disabled={isEditMode} // ✅ Disable in edit mode
+                className={`w-full pl-10 pr-3 py-2 border rounded transition
+        ${
+          isEditMode
+            ? "bg-gray-200 cursor-not-allowed text-gray-500"
+            : "bg-white dark:bg-gray-800"
+        }
+      `}
+                placeholder="Enter Roll Number"
               />
             </div>
           </div>
@@ -142,8 +162,18 @@ const StudentForm = ({
             ))}
           </select>
           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <svg
+              className="w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </div>
         </div>
@@ -153,31 +183,53 @@ const StudentForm = ({
             <div className="flex items-start gap-3">
               <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
               <div className="flex-1">
-                <h4 className="font-semibold text-blue-900 mb-2">{selectedCourse.name}</h4>
+                <h4 className="font-semibold text-blue-900 mb-2">
+                  {selectedCourse.name}
+                </h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="text-blue-700 font-medium">Department:</span>
-                    <span className="text-blue-900 ml-2">{selectedCourse.department}</span>
+                    <span className="text-blue-700 font-medium">
+                      Department:
+                    </span>
+                    <span className="text-blue-900 ml-2">
+                      {selectedCourse.department}
+                    </span>
                   </div>
                   <div>
                     <span className="text-blue-700 font-medium">Duration:</span>
-                    <span className="text-blue-900 ml-2">{selectedCourse.duration}</span>
+                    <span className="text-blue-900 ml-2">
+                      {selectedCourse.duration}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-blue-700 font-medium">Total Semesters:</span>
-                    <span className="text-blue-900 ml-2">{selectedCourse.totalSemesters}</span>
+                    <span className="text-blue-700 font-medium">
+                      Total Semesters:
+                    </span>
+                    <span className="text-blue-900 ml-2">
+                      {selectedCourse.totalSemesters}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-blue-700 font-medium">Fee per Semester:</span>
-                    <span className="text-blue-900 ml-2">₹{selectedCourse.semesterFees.toLocaleString('en-IN')}</span>
+                    <span className="text-blue-700 font-medium">
+                      Fee per Semester:
+                    </span>
+                    <span className="text-blue-900 ml-2">
+                      ₹{selectedCourse.semesterFees.toLocaleString("en-IN")}
+                    </span>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-blue-700 font-medium">Total Fees:</span>
-                    <span className="text-blue-900 ml-2 font-bold">₹{selectedCourse.totalFees.toLocaleString('en-IN')}</span>
+                    <span className="text-blue-700 font-medium">
+                      Total Fees:
+                    </span>
+                    <span className="text-blue-900 ml-2 font-bold">
+                      ₹{selectedCourse.totalFees.toLocaleString("en-IN")}
+                    </span>
                   </div>
                   {selectedCourse.description && (
                     <div className="col-span-2 mt-1">
-                      <p className="text-xs text-blue-600">{selectedCourse.description}</p>
+                      <p className="text-xs text-blue-600">
+                        {selectedCourse.description}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -245,24 +297,38 @@ const StudentForm = ({
             ? `Auto-filled from course. This will be set as the initial pending fees.`
             : "This will be set as the initial pending fees"}
         </p>
-        {selectedCourse && formData.semesterFees && formData.semesterFees.length > 0 && (
-          <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-xs font-semibold text-gray-700 mb-2">Semester Fee Structure:</p>
-            <div className="space-y-1">
-              {formData.semesterFees.slice(0, 3).map((sem, idx) => (
-                <div key={idx} className="flex justify-between text-xs text-gray-600">
-                  <span>Semester {sem.semester}:</span>
-                  <span className="font-medium">
-                    ₹{sem.amount.toLocaleString('en-IN')} (Due: {new Date(sem.dueDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })})
-                  </span>
-                </div>
-              ))}
-              {formData.semesterFees.length > 3 && (
-                <p className="text-xs text-gray-500 italic">... and {formData.semesterFees.length - 3} more semesters</p>
-              )}
+        {selectedCourse &&
+          formData.semesterFees &&
+          formData.semesterFees.length > 0 && (
+            <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <p className="text-xs font-semibold text-gray-700 mb-2">
+                Semester Fee Structure:
+              </p>
+              <div className="space-y-1">
+                {formData.semesterFees.slice(0, 3).map((sem, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between text-xs text-gray-600"
+                  >
+                    <span>Semester {sem.semester}:</span>
+                    <span className="font-medium">
+                      ₹{sem.amount.toLocaleString("en-IN")} (Due:{" "}
+                      {new Date(sem.dueDate).toLocaleDateString("en-IN", {
+                        month: "short",
+                        year: "numeric",
+                      })}
+                      )
+                    </span>
+                  </div>
+                ))}
+                {formData.semesterFees.length > 3 && (
+                  <p className="text-xs text-gray-500 italic">
+                    ... and {formData.semesterFees.length - 3} more semesters
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     </div>
   );

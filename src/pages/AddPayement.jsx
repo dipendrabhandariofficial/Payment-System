@@ -1,9 +1,10 @@
-// ============================================
-// COMPLETE AddPayment.jsx with Sequential Fee System
-// ============================================
-
-import React, { useState, useEffect } from "react";
-import { getStudents, addPayment, updateStudent, getPayments } from "../services/api";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import {
+  getStudents,
+  addPayment,
+  updateStudent,
+  getPayments,
+} from "../services/api";
 import {
   CheckCircle,
   AlertCircle,
@@ -14,20 +15,30 @@ import {
   GraduationCap,
   BookOpen,
   Info,
+  Filter,
+  Search,
+  Users,
 } from "lucide-react";
 import Select from "../components/Select";
 import { courses as initialCourses, getCourseById } from "../data/courses";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageLayout from "../components/PageLayout";
+import SearchBar from "../components/Search";
+import { Dropdown } from "@dipendrabhandari/react-ui-library";
 
 const AddPayment = () => {
   const [students, setStudents] = useState([]);
-  const [payments, setPayments] = useState([]); // ADDED: Track all payments
+  const [payments, setPayments] = useState([]);
+  const [availableCourses, setAvailableCourses] = useState(initialCourses);
+
+  const [filterCourse, setFilterCourse] = useState("");
+  const [filterSemester, setFilterSemester] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
   const [selectedPaymentCourse, setSelectedPaymentCourse] = useState(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [formData, setFormData] = useState({
     amount: "",
@@ -42,39 +53,80 @@ const AddPayment = () => {
     remarks: "",
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const [loading, setLoading] = useState(true);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const [showExtra, setShowExtra] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [studentsData, paymentsData] = await Promise.all([
         getStudents(),
-        getPayments()
+        getPayments(),
       ]);
       setStudents(studentsData);
       setPayments(paymentsData);
-    } catch (error) {
+    } catch (err) {
       setError("Failed to load data");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // CRITICAL: Function to determine which semesters can be paid
+  useEffect(() => {
+    fetchData();
+    const savedCourses = localStorage.getItem("courses");
+    if (savedCourses) setAvailableCourses(JSON.parse(savedCourses));
+  }, [fetchData]);
+
+  // Filtered students
+  const filteredStudents = useMemo(() => {
+    return students.filter((student) => {
+      if (filterCourse && student.courseId !== filterCourse) return false;
+      if (filterSemester && student.semester !== filterSemester) return false;
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          student.name.toLowerCase().includes(query) ||
+          student.rollNumber.toLowerCase().includes(query)
+        );
+      }
+      return true;
+    });
+  }, [students, filterCourse, filterSemester, searchQuery]);
+
+  useEffect(() => {
+  if (filteredStudents.length === 1) {
+    // auto select the only available student
+    const single = filteredStudents[0];
+    setSelectedStudent(single);
+
+    const courseObj = getCourseById(single.courseId);
+    setSelectedPaymentCourse(courseObj || null);
+
+    const availableSemesters = getAvailableSemesters(single);
+    const semester =
+      availableSemesters.length > 0
+        ? availableSemesters[0].semester.toString()
+        : single.semester || "1";
+
+    setFormData((prev) => ({
+      ...prev,
+      courseId: single.courseId,
+      course: courseObj ? courseObj.name : single.course,
+      semester,
+    }));
+  }
+}, [filteredStudents]);
+
+
   const getAvailableSemesters = (student) => {
     if (!student) return [];
-
     const currentSemester = parseInt(student.semester) || 1;
     const semesterFees = student.semesterFees || [];
-
-    // Check each semester from 1 to current semester
     for (let sem = 1; sem <= currentSemester; sem++) {
-      const semFee = semesterFees.find(sf => parseInt(sf.semester) === sem);
-
+      const semFee = semesterFees.find((sf) => parseInt(sf.semester) === sem);
       if (!semFee) continue;
-
-      // Calculate paid amount for this semester
       const semesterPayments = payments.filter(
         (p) =>
           p.studentId === student.id &&
@@ -82,97 +134,21 @@ const AddPayment = () => {
           p.status === "Completed"
       );
       const paidAmount = semesterPayments.reduce((sum, p) => sum + p.amount, 0);
-
-      // If this semester is not fully paid, BLOCK here
       if (paidAmount < semFee.amount) {
-        const remainingAmount = semFee.amount - paidAmount;
-        return [{
-          semester: sem,
-          paidAmount,
-          totalAmount: semFee.amount,
-          remainingAmount,
-          isBlocked: sem < currentSemester // True if it's a past semester
-        }];
+        return [
+          {
+            semester: sem,
+            paidAmount,
+            totalAmount: semFee.amount,
+            remainingAmount: semFee.amount - paidAmount,
+          },
+        ];
       }
     }
-
-    // All semesters paid up to current
     return [];
   };
 
-  const getCourses = () => {
-    const savedCourses = localStorage.getItem("courses");
-    return savedCourses ? JSON.parse(savedCourses) : initialCourses;
-  };
-
-  const courses = getCourses();
-
-  const handleStudentChange = (e) => {
-    const studentId = e.target.value;
-
-    if (!studentId) {
-      setSelectedStudent(null);
-      setSelectedPaymentCourse(null);
-      resetForm();
-      return;
-    }
-
-    const student = students.find((s) => s.id === studentId);
-
-    if (student) {
-      setSelectedStudent(student);
-
-      let courseId = "";
-      let courseName = "";
-      let courseObj = null;
-
-      if (student.courseId) {
-        courseObj = getCourseById(student.courseId);
-        if (courseObj) {
-          courseId = student.courseId;
-          courseName = courseObj.name;
-          setSelectedPaymentCourse(courseObj);
-        }
-      }
-
-      if (!courseObj && student.course) {
-        courseObj = courses.find((c) => c.name === student.course);
-        if (courseObj) {
-          courseId = courseObj.id;
-          courseName = courseObj.name;
-          setSelectedPaymentCourse(courseObj);
-        } else {
-          courseName = student.course;
-          setSelectedPaymentCourse(null);
-        }
-      }
-
-      // Get available semester (the first unpaid one)
-      const availableSemesters = getAvailableSemesters(student);
-      const semester = availableSemesters.length > 0 
-        ? availableSemesters[0].semester.toString() 
-        : student.semester || "1";
-
-      setFormData({
-        amount: "",
-        paymentDate: new Date().toISOString().split("T")[0],
-        paymentMethod: "Cash",
-        courseId,
-        course: courseName,
-        semester,
-        transactionId: "",
-        referenceNumber: "",
-        bankName: "",
-        remarks: "",
-      });
-
-      setError("");
-    } else {
-      setError("Student not found");
-    }
-  };
-
-  const resetForm = () => {
+  const resetPaymentForm = () => {
     setFormData({
       amount: "",
       paymentDate: new Date().toISOString().split("T")[0],
@@ -187,26 +163,68 @@ const AddPayment = () => {
     });
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const option = filteredStudents.map((student) => ({
+    label: `${student.name} (${student.rollNumber}) - Pending: ${student.pendingFees}`,
+    value: student.id,
+  }));
 
-    if (name === "courseId") {
-      const course = courses.find((c) => c.id === value);
-      if (course) {
-        setSelectedPaymentCourse(course);
-        setFormData({
-          ...formData,
-          courseId: value,
-          course: course.name,
-        });
-      } else {
-        setSelectedPaymentCourse(null);
-        setFormData({ ...formData, courseId: "", course: "" });
-      }
+  const handleStudentChange = (e) => {
+    const studentId = e.target.value;
+    if (!studentId) {
+      setSelectedStudent(null);
+      setSelectedPaymentCourse(null);
+      resetPaymentForm();
+      return;
+    }
+
+    const student = students.find((s) => s.id === studentId);
+    if (student) {
+      setSelectedStudent(student);
+      const courseObj = getCourseById(student.courseId);
+      setSelectedPaymentCourse(courseObj || null);
+
+      const availableSemesters = getAvailableSemesters(student);
+      const semester =
+        availableSemesters.length > 0
+          ? availableSemesters[0].semester.toString()
+          : student.semester || "1";
+
+      setFormData({
+        ...formData,
+        amount: "",
+        paymentDate: new Date().toISOString().split("T")[0],
+        paymentMethod: "Cash",
+        courseId: student.courseId || "",
+        course: courseObj ? courseObj.name : student.course,
+        semester,
+        transactionId: "",
+        referenceNumber: "",
+        bankName: "",
+        remarks: "",
+      });
+
+      setError("");
     } else {
-      setFormData({ ...formData, [name]: value });
+      setError("Student not found");
     }
   };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (name === "courseId") {
+      const course = availableCourses.find((c) => c.id === value);
+      setSelectedPaymentCourse(course || null);
+      setFormData((prev) => ({ ...prev, course: course ? course.name : "" }));
+    }
+  };
+
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -214,32 +232,34 @@ const AddPayment = () => {
     setSuccess(false);
 
     if (!selectedStudent) return setError("Please select a student");
-
     const amount = parseFloat(formData.amount);
     if (!amount || amount <= 0) return setError("Enter a valid amount");
 
-    // CRITICAL VALIDATION: Check if the semester is payable
     const availableSemesters = getAvailableSemesters(selectedStudent);
     const selectedSemesterNum = parseInt(formData.semester);
 
-    if (availableSemesters.length === 0) {
-      return setError("All semester fees are already paid up to the current semester!");
-    }
+   if (!availableSemesters.length) {
+  setError("All semester fees are already paid!");
 
-    const payableSemester = availableSemesters.find(s => s.semester === selectedSemesterNum);
+  setTimeout(() => {
+    setError(""); // Clear after 3 seconds
+  }, 3000);
 
-    if (!payableSemester) {
+  return;
+}
+
+    const payableSemester = availableSemesters.find(
+      (s) => s.semester === selectedSemesterNum
+    );
+    if (!payableSemester)
+      return setError(`Pay Semester ${availableSemesters[0].semester} first.`);
+
+    if (amount > payableSemester.remainingAmount)
       return setError(
-        `Cannot pay for Semester ${selectedSemesterNum}. You must first clear Semester ${availableSemesters[0].semester} (${formatCurrency(availableSemesters[0].remainingAmount)} remaining).`
+        `Amount exceeds remaining fees: ${formatCurrency(
+          payableSemester.remainingAmount
+        )}`
       );
-    }
-
-    // Check if amount exceeds remaining for this semester
-    if (amount > payableSemester.remainingAmount) {
-      return setError(
-        `Amount exceeds remaining fees for Semester ${selectedSemesterNum}: ${formatCurrency(payableSemester.remainingAmount)}`
-      );
-    }
 
     try {
       const paymentData = {
@@ -259,226 +279,157 @@ const AddPayment = () => {
         remarks: formData.remarks || null,
         status: "Completed",
       };
-
       await addPayment(paymentData);
 
-      // Update student's overall fees
+      // Update student
       const updatedStudent = {
         ...selectedStudent,
         paidFees: (selectedStudent.paidFees || 0) + amount,
-        pendingFees: Math.max(0, (selectedStudent.pendingFees || selectedStudent.totalFees) - amount),
+        pendingFees: Math.max(
+          0,
+          (selectedStudent.pendingFees || selectedStudent.totalFees) - amount
+        ),
       };
-
       await updateStudent(selectedStudent.id, updatedStudent);
 
       setSuccess(true);
-      resetForm();
+      resetPaymentForm();
       setSelectedStudent(null);
       setSelectedPaymentCourse(null);
-      
-      // Refresh data
       await fetchData();
-
       setTimeout(() => setSuccess(false), 3000);
-    } catch (error) {
-      console.error("Payment error:", error);
+    } catch (err) {
       setError("Failed to process payment");
       setTimeout(() => setError(""), 3000);
     }
   };
-
-  const formatCurrency = (amount) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(amount);
 
   if (loading) return <LoadingSpinner message="Loading payment data..." />;
 
   return (
     <PageLayout
       title="Add Payment"
-      description="Process a new payment for a student. Students must clear previous semester fees before paying current semester."
+      description="Process a new payment for a student. Use filters to find students quickly."
       icon={<DollarSign className="w-6 h-6 text-gray-600 dark:text-gray-300" />}
     >
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto space-y-6">
         {success && (
-          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 text-green-700 dark:text-green-300 rounded-lg flex items-center">
+          <div className="p-4 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 text-green-700 dark:text-green-300 rounded-lg flex items-center shadow-sm">
             <CheckCircle className="w-5 h-5 mr-3" />
-            <span className="text-sm font-medium">Payment processed successfully!</span>
+            Payment processed successfully!
           </div>
         )}
-
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 rounded-lg flex items-center">
+          <div className="p-4 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 rounded-lg flex items-center shadow-sm">
             <AlertCircle className="w-5 h-5 mr-3" />
-            <span className="text-sm font-medium">{error}</span>
+            {error}
           </div>
         )}
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* SELECT STUDENT */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                Select Student <span className="text-red-500">*</span>
-              </label>
-              <select
-                onChange={handleStudentChange}
-                className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg 
-                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500"
-                required
-              >
-                <option value="">Choose a student...</option>
-                {students.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.name} - {student.rollNumber} (Pending: {formatCurrency(student.pendingFees)})
-                  </option>
-                ))}
-              </select>
-            </div>
+        {/* FILTER */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Select
+            label="Department"
+            value={filterCourse}
+            onChange={(e) => setFilterCourse(e.target.value)}
+            icon={BookOpen}
+            options={[
+              { value: "", label: "All Courses" },
+              ...availableCourses.map((c) => ({
+                value: c.id,
+                label: c.name,
+              })),
+            ]}
+          />
 
-            {/* STUDENT INFO */}
-            {selectedStudent && (
-              <div className="bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Student Information
-                </h3>
+          <Select
+            label="Degree Type"
+            value={filterSemester}
+            onChange={(e) => {
+              setFilterSemester(e.target.value);
+              setSelectedStudent(null);
+            }}
+            icon={GraduationCap}
+            options={[
+              { value: "", label: "All Semesters" },
+              { value: "1", label: "1" },
+              { value: "2", label: "2" },
+              { value: "3", label: "3" },
+              { value: "4", label: "4" },
+              { value: "5", label: "5" },
+              { value: "6", label: "6" },
+              { value: "7", label: "7" },
+              { value: "8", label: "8" },
+            ]}
+            className="w-full"
+          />
+          <SearchBar
+            searchTerm={searchQuery}
+            label={"Search"}
+            setSearchTerm={setSearchQuery}
+            placeholder="Search by name or roll number..."
+            className="w-full "
+          />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Name</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">
-                      {selectedStudent.name}
-                    </p>
-                  </div>
+         <div className="md:col-span-3">
+  {filteredStudents.length === 0 && (
+    <div className="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-3">
+      <p className="text-sm text-red-700 dark:text-red-300 font-medium flex items-center gap-2">
+        <AlertCircle className="w-4 h-4" />
+        No students match the selected filters.
+      </p>
+    </div>
+  )}
 
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Roll Number</p>
-                    <p className="font-semibold font-mono text-gray-900 dark:text-white">
-                      {selectedStudent.rollNumber}
-                    </p>
-                  </div>
+  {filteredStudents.length > 0 && (
+    <Select
+      label="Select Student"
+      value={selectedStudent?.id || ""}
+      onChange={handleStudentChange}
+      placeholder="Choose a student"
+      options={filteredStudents.map((student) => ({
+        value: student.id,
+        label: `${student.name} (${student.rollNumber}) — Pending: ${formatCurrency(
+          student.pendingFees
+        )}`,
+      }))}
+      className="transition-all duration-200"
+    />
+  )}
+</div>
+        </div>
 
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Course</p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {selectedStudent.course || "Not assigned"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Current Semester</p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {selectedStudent.semester || "Not set"}
-                    </p>
-                  </div>
-
-                  {/* Course Extra Info */}
-                  {selectedPaymentCourse && (
-                    <div className="col-span-2 mt-2 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
-                      <p className="text-xs font-semibold text-blue-900 dark:text-blue-300">
-                        Course Information:
-                      </p>
-                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                        Department: {selectedPaymentCourse.department} | Fee per Semester: ₹
-                        {selectedPaymentCourse.semesterFees.toLocaleString("en-IN")}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* FEES */}
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Total Fees</p>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(selectedStudent.totalFees)}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Paid Fees</p>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(selectedStudent.paidFees || 0)}
-                    </p>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="col-span-2">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Pending Fees</p>
-                    <p className="text-xl font-bold text-gray-900 dark:text-white">
-                      {formatCurrency(selectedStudent.pendingFees)}
-                    </p>
-
-                    <div className="mt-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
-                      <div
-                        className="bg-gray-600 dark:bg-gray-300 h-2.5 rounded-full"
-                        style={{
-                          width: `${
-                            selectedStudent.totalFees > 0
-                              ? ((selectedStudent.paidFees || 0) / selectedStudent.totalFees) * 100
-                              : 0
-                          }%`,
-                        }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
-                      {selectedStudent.totalFees > 0
-                        ? `${Math.round(
-                            ((selectedStudent.paidFees || 0) / selectedStudent.totalFees) * 100
-                          )}% paid`
-                        : "0% paid"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* PAYMENT FORM FIELDS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Amount */}
+        {/* PAYMENT FORM */}
+        {selectedStudent && (
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 space-y-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                  Payment Amount *
-                </label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-300" />
-                  <input
-                    type="number"
-                    name="amount"
-                    value={formData.amount}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.01"
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 
-                    bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg"
-                    required
-                  />
-                </div>
+                <label>Amount</label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={formData.amount}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  required
+                  className="w-full border rounded px-2 py-2"
+                />
               </div>
-
-              {/* Date */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                  Payment Date *
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-300" />
-                  <input
-                    type="date"
-                    name="paymentDate"
-                    value={formData.paymentDate}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 
-                    bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg"
-                    required
-                  />
-                </div>
+                <label>Payment Date</label>
+                <input
+                  type="date"
+                  name="paymentDate"
+                  value={formData.paymentDate}
+                  onChange={handleChange}
+                  required
+                  className="w-full border rounded px-2 py-2"
+                />
               </div>
-
-              {/* Payment Method */}
               <div>
                 <Select
                   label="Payment Method"
@@ -486,7 +437,6 @@ const AddPayment = () => {
                   value={formData.paymentMethod}
                   onChange={handleChange}
                   icon={CreditCard}
-                  darkMode
                   options={[
                     { value: "Cash", label: "Cash" },
                     { value: "Online", label: "Online Transfer" },
@@ -496,178 +446,79 @@ const AddPayment = () => {
                 />
               </div>
 
-              {/* Course for Payment */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                  Course for Payment *
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                  Semester to Pay
                 </label>
-                <Select
-                  name="courseId"
-                  value={formData.courseId}
-                  onChange={handleChange}
-                  icon={BookOpen}
-                  darkMode
-                  options={[
-                    { value: "", label: "Select course..." },
-                    ...courses.map((course) => ({
-                      value: course.id,
-                      label: course.name,
-                    })),
-                  ]}
-                />
 
-                {selectedPaymentCourse && (
-                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <Info className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <div>
-                        <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">
-                          {selectedPaymentCourse.name}
-                        </p>
-                        <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                          Department: {selectedPaymentCourse.department} | Fee per Semester: ₹
-                          {selectedPaymentCourse.semesterFees.toLocaleString("en-IN")}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Semester - SEQUENTIAL PAYMENT ENFORCEMENT */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                  Semester *
-                  {selectedStudent && getAvailableSemesters(selectedStudent).length > 0 && getAvailableSemesters(selectedStudent)[0].isBlocked && (
-                    <span className="text-red-600 text-xs ml-2 font-bold">
-                      ⚠️ Previous semester dues must be cleared first!
-                    </span>
-                  )}
-                </label>
-                <div className="relative">
-                  <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-300" />
+                {getAvailableSemesters(selectedStudent).length === 0 ? (
+                  <p className="text-sm text-green-600 dark:text-green-300 font-medium bg-green-50 dark:bg-green-900/30 border border-green-400 px-3 py-2 rounded">
+                    ✅ All semester fees are fully paid. No payment required.
+                  </p>
+                ) : (
                   <select
                     name="semester"
                     value={formData.semester}
                     onChange={handleChange}
-                    disabled={!selectedStudent || getAvailableSemesters(selectedStudent).length === 0}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 
-                    bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg 
-                    disabled:opacity-50 disabled:cursor-not-allowed"
                     required
+                    className="w-full border rounded px-2 py-2"
                   >
-                    <option value="">Select semester...</option>
-                    {selectedStudent &&
-                      getAvailableSemesters(selectedStudent).map(({ semester, paidAmount, totalAmount, remainingAmount }) => (
-                        <option key={semester} value={semester}>
-                          Semester {semester} - Paid: ₹{paidAmount.toLocaleString("en-IN")} / ₹
-                          {totalAmount.toLocaleString("en-IN")} (Remaining: ₹{remainingAmount.toLocaleString("en-IN")})
-                        </option>
-                      ))}
+                    {getAvailableSemesters(selectedStudent).map((s) => (
+                      <option key={s.semester} value={s.semester}>
+                        Semester {s.semester} — Remaining:{" "}
+                        {formatCurrency(s.remainingAmount)}
+                      </option>
+                    ))}
                   </select>
-                </div>
-                {selectedStudent && getAvailableSemesters(selectedStudent).length === 0 && (
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4" />
-                    All semester fees up to current semester are fully paid!
-                  </p>
-                )}
-                {selectedStudent && getAvailableSemesters(selectedStudent).length > 0 && (
-                  <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded text-xs text-yellow-800 dark:text-yellow-300">
-                    <strong>Note:</strong> You can only pay for the earliest unpaid semester. Complete all previous semester payments first.
-                  </div>
                 )}
               </div>
             </div>
 
-            {/* Additional Details */}
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                Additional Payment Details (Optional)
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Transaction ID */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                    Transaction ID
-                  </label>
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowExtra(!showExtra)}
+                className="text-sm text-blue-500 mb-2"
+              >
+                Show/Hide Extra Details
+              </button>
+              {showExtra && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <input
                     type="text"
+                    placeholder="Transaction ID"
                     name="transactionId"
                     value={formData.transactionId}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 
-                    bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg"
-                    placeholder="Enter transaction ID"
+                    className="border rounded px-2 py-2"
                   />
-                </div>
-
-                {/* Reference Number */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                    Reference Number
-                  </label>
                   <input
                     type="text"
-                    name="referenceNumber"
-                    value={formData.referenceNumber}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 
-                    bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg"
-                    placeholder="Enter reference number"
-                  />
-                </div>
-
-                {/* Bank Name */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                    Bank Name
-                  </label>
-                  <input
-                    type="text"
+                    placeholder="Bank Name"
                     name="bankName"
                     value={formData.bankName}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 
-                    bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg"
-                    placeholder="Enter bank name"
+                    className="border rounded px-2 py-2"
                   />
-                </div>
-
-                {/* Remarks */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                    Remarks / Notes
-                  </label>
                   <textarea
+                    placeholder="Remarks"
                     name="remarks"
-                    rows="3"
                     value={formData.remarks}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 
-                    bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg resize-none"
-                    placeholder="Add any additional notes..."
-                  ></textarea>
+                    className="border rounded px-2 py-2 md:col-span-2"
+                  />
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* SUBMIT BUTTON */}
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
-                type="submit"
-                disabled={!selectedStudent || getAvailableSemesters(selectedStudent).length === 0}
-                className="w-full bg-gray-800 dark:bg-gray-600 text-white py-3.5 rounded-lg 
-                font-semibold hover:bg-gray-900 dark:hover:bg-gray-500 transition-all shadow-lg 
-                flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <DollarSign className="w-5 h-5" />
-                Process Payment
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-2 rounded"
+            >
+              Process Payment
+            </button>
           </form>
-        </div>
+        )}
       </div>
     </PageLayout>
   );

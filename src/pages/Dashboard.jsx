@@ -262,10 +262,13 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <StatCard
-          title={t("dashboard.students")}
+          title={t("dashboard.feepaid")}
           value={stats.totalStudents}
           subtitle={`${t("dashboard.activein")} ${t(`dashboard.${period}`)}`}
           icon={Users}
+          iconBg="bg-blue-100"
+          iconColor="text-blue-600"
+          valueColor="text-blue-600"
         />
         <StatCard
           title={t("dashboard.collection")}

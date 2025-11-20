@@ -48,6 +48,40 @@ const StudentViewModal = ({ student, isOpen, onClose }) => {
     }).format(amount);
   };
 
+  // Calculate which semesters have been paid based on payment records
+  const getSemesterPaymentStatus = () => {
+    if (!student.semesterFees || !payments.length) {
+      return student.semesterFees || [];
+    }
+
+    // Get completed payments grouped by semester
+    const completedPayments = payments.filter(p => p.status === 'Completed');
+    const paymentsBySemester = {};
+    
+    completedPayments.forEach(payment => {
+      const sem = payment.semester;
+      if (sem) {
+        if (!paymentsBySemester[sem]) {
+          paymentsBySemester[sem] = 0;
+        }
+        paymentsBySemester[sem] += payment.amount;
+      }
+    });
+
+    // Update semester fees with payment status
+    return student.semesterFees.map(semFee => {
+      const paidAmount = paymentsBySemester[semFee.semester] || 0;
+      const isPaid = paidAmount >= semFee.amount;
+      
+      return {
+        ...semFee,
+        paid: isPaid,
+        paidAmount: paidAmount,
+        remainingAmount: Math.max(0, semFee.amount - paidAmount)
+      };
+    });
+  };
+
   if (!student) return null;
 
   const progressPercentage = student.totalFees > 0 
@@ -57,6 +91,9 @@ const StudentViewModal = ({ student, isOpen, onClose }) => {
   // Calculate completed payments total
   const completedPayments = payments.filter(p => p.status === 'Completed');
   const totalPaidFromPayments = completedPayments.reduce((sum, p) => sum + p.amount, 0);
+
+  // Get updated semester fees with payment status
+  const semesterFeesWithStatus = getSemesterPaymentStatus();
 
   return (
     <Modal
@@ -70,7 +107,7 @@ const StudentViewModal = ({ student, isOpen, onClose }) => {
       <div className="space-y-6">
         {/* Student Info */}
         <div>
-          <h3 className=" -z-10 text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+          <h3 className="-z-10 text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
             Personal Information
           </h3>
           <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -122,7 +159,7 @@ const StudentViewModal = ({ student, isOpen, onClose }) => {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
             <div
-              className="bg-linear-to-r from-gray-600 to-gray-800 h-3 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-gray-600 to-gray-800 h-3 rounded-full transition-all duration-300"
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
@@ -143,24 +180,33 @@ const StudentViewModal = ({ student, isOpen, onClose }) => {
         </div>
 
         {/* Semester-wise Breakdown */}
-        {student.semesterFees && student.semesterFees.length > 0 && (
+        {semesterFeesWithStatus.length > 0 && (
           <div className="pt-6 border-t border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-              Semester-wise Fee Structure
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3 flex items-center justify-between">
+              <span>Semester-wise Fee Structure</span>
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                {semesterFeesWithStatus.filter(s => s.paid).length} / {semesterFeesWithStatus.length} Paid
+              </span>
             </h3>
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 max-h-64 overflow-y-auto">
               <div className="space-y-2">
-                {student.semesterFees.map((semFee, index) => (
+                {semesterFeesWithStatus.map((semFee, index) => (
                   <div 
                     key={index} 
-                    className={`flex items-center justify-between p-3 rounded-md ${
+                    className={`flex items-center justify-between p-3 rounded-md transition-all ${
                       semFee.paid 
                         ? 'bg-green-100 border border-green-300' 
+                        : semFee.paidAmount > 0
+                        ? 'bg-yellow-50 border border-yellow-300'
                         : 'bg-white border border-gray-200'
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="px-2 py-1 bg-gray-200 rounded text-xs font-semibold text-gray-700">
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        semFee.paid 
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-gray-200 text-gray-700'
+                      }`}>
                         Sem {semFee.semester}
                       </span>
                       <div>
@@ -174,15 +220,29 @@ const StudentViewModal = ({ student, isOpen, onClose }) => {
                             day: 'numeric'
                           })}
                         </p>
+                        {semFee.paidAmount > 0 && !semFee.paid && (
+                          <p className="text-xs text-amber-600 font-medium mt-1">
+                            Partial: {formatCurrency(semFee.paidAmount)} paid, {formatCurrency(semFee.remainingAmount)} remaining
+                          </p>
+                        )}
                       </div>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      semFee.paid 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-yellow-100 text-yellow-700 border border-yellow-300'
-                    }`}>
-                      {semFee.paid ? '✓ Paid' : 'Pending'}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        semFee.paid 
+                          ? 'bg-green-600 text-white' 
+                          : semFee.paidAmount > 0
+                          ? 'bg-amber-100 text-amber-700 border border-amber-300'
+                          : 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                      }`}>
+                        {semFee.paid ? '✓ Paid' : semFee.paidAmount > 0 ? 'Partial' : 'Pending'}
+                      </span>
+                      {semFee.paidAmount > 0 && (
+                        <span className="text-xs text-gray-500">
+                          {formatCurrency(semFee.paidAmount)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

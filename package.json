@@ -11,7 +11,9 @@
     "start": "json-server --watch db.json"
   },
   "dependencies": {
+    "@dipendrabhandari/react-ui-library": "^0.1.0",
     "@tailwindcss/vite": "^4.1.16",
+    "@tanstack/react-query": "^5.90.10",
     "axios": "^1.13.1",
     "i18next": "^25.6.0",
     "json-server": "^1.0.0-beta.3",
@@ -25,7 +27,8 @@
     "react-i18next": "^16.2.4",
     "react-router-dom": "^7.9.5",
     "recharts": "^3.3.0",
-    "tailwindcss": "^4.1.16"
+    "tailwindcss": "^4.1.16",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

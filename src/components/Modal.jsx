@@ -56,7 +56,6 @@ const Modal = ({
           </button>
         </div>
 
-        {/* Content - Scrollable */}
         <div className="p-6 overflow-y-auto flex-1">
           {children}
         </div>

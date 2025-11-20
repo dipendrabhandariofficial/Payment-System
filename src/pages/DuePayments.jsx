@@ -4,12 +4,21 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { getStudents, getPayments } from "../services/api";
-import { AlertCircle, Calendar, DollarSign, Clock, TrendingUp, Users, Filter } from "lucide-react";
+import {
+  AlertCircle,
+  Calendar,
+  DollarSign,
+  Clock,
+  TrendingUp,
+  Users,
+  Filter,
+} from "lucide-react";
 import Select from "../components/Select";
 import SearchBar from "../components/Search";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageLayout from "../components/PageLayout";
 import StatCard from "../components/StatCard";
+import DataTable from "../components/DataTable";
 
 const DuePayments = () => {
   const [students, setStudents] = useState([]);
@@ -69,13 +78,13 @@ const DuePayments = () => {
   const getPayableSemester = (student) => {
     const currentSemester = parseInt(student.semester) || 1;
     const semesterFees = student.semesterFees || [];
-    
+
     // Check each semester from 1 to current semester
     for (let sem = 1; sem <= currentSemester; sem++) {
-      const semFee = semesterFees.find(sf => parseInt(sf.semester) === sem);
-      
+      const semFee = semesterFees.find((sf) => parseInt(sf.semester) === sem);
+
       if (!semFee) continue;
-      
+
       // Calculate paid amount for this semester
       const semesterPayments = payments.filter(
         (p) =>
@@ -84,13 +93,13 @@ const DuePayments = () => {
           p.status === "Completed"
       );
       const paidAmount = semesterPayments.reduce((sum, p) => sum + p.amount, 0);
-      
+
       // If this semester is not fully paid, this is the payable semester
       if (paidAmount < semFee.amount) {
         return sem;
       }
     }
-    
+
     // All semesters up to current are paid
     return null;
   };
@@ -103,21 +112,23 @@ const DuePayments = () => {
       .map((student) => {
         const currentSemester = parseInt(student.semester) || 1;
         const payableSemester = getPayableSemester(student);
-        
+
         // Only show the earliest unpaid semester (blocking system)
         if (!payableSemester) return [];
-        
+
         const semesterFees = student.semesterFees || [];
-        const semFee = semesterFees.find(sf => parseInt(sf.semester) === payableSemester);
-        
+        const semFee = semesterFees.find(
+          (sf) => parseInt(sf.semester) === payableSemester
+        );
+
         if (!semFee) return [];
-        
+
         const dueDate = semFee.dueDate ? new Date(semFee.dueDate) : null;
         if (dueDate) dueDate.setHours(0, 0, 0, 0);
-        
+
         const daysUntilDue = getDaysUntilDue(semFee.dueDate);
         const isOverdue = dueDate && dueDate < today;
-        
+
         // Calculate paid amount for this semester
         const semesterPayments = payments.filter(
           (p) =>
@@ -125,27 +136,32 @@ const DuePayments = () => {
             parseInt(p.semester) === payableSemester &&
             p.status === "Completed"
         );
-        const paidAmount = semesterPayments.reduce((sum, p) => sum + p.amount, 0);
+        const paidAmount = semesterPayments.reduce(
+          (sum, p) => sum + p.amount,
+          0
+        );
         const remainingAmount = semFee.amount - paidAmount;
-        
+
         if (remainingAmount <= 0) return [];
-        
-        return [{
-          studentId: student.id,
-          studentName: student.name,
-          rollNumber: student.rollNumber,
-          course: student.course,
-          semester: payableSemester.toString(),
-          semesterNumber: payableSemester,
-          currentSemester: currentSemester,
-          dueAmount: remainingAmount,
-          dueDate: semFee.dueDate,
-          daysUntilDue,
-          isOverdue,
-          paidAmount,
-          totalSemesterFee: semFee.amount,
-          isBlocked: payableSemester < currentSemester, // Blocked if not current semester
-        }];
+
+        return [
+          {
+            studentId: student.id,
+            studentName: student.name,
+            rollNumber: student.rollNumber,
+            course: student.course,
+            semester: payableSemester.toString(),
+            semesterNumber: payableSemester,
+            currentSemester: currentSemester,
+            dueAmount: remainingAmount,
+            dueDate: semFee.dueDate,
+            daysUntilDue,
+            isOverdue,
+            paidAmount,
+            totalSemesterFee: semFee.amount,
+            isBlocked: payableSemester < currentSemester, // Blocked if not current semester
+          },
+        ];
       })
       .flat()
       .filter((item) => {
@@ -161,7 +177,12 @@ const DuePayments = () => {
       })
       .filter((item) => {
         if (filterType === "overdue") return item.isOverdue;
-        if (filterType === "upcoming") return !item.isOverdue && item.daysUntilDue !== null && item.daysUntilDue <= 30;
+        if (filterType === "upcoming")
+          return (
+            !item.isOverdue &&
+            item.daysUntilDue !== null &&
+            item.daysUntilDue <= 30
+          );
         return true;
       })
       .sort((a, b) => {
@@ -180,10 +201,141 @@ const DuePayments = () => {
   const upcomingCount = calculateDuePayments.filter(
     (p) => !p.isOverdue && p.daysUntilDue !== null && p.daysUntilDue <= 30
   ).length;
-  const totalDueAmount = calculateDuePayments.reduce((sum, p) => sum + p.dueAmount, 0);
+  const totalDueAmount = calculateDuePayments.reduce(
+    (sum, p) => sum + p.dueAmount,
+    0
+  );
   const totalOverdueAmount = calculateDuePayments
     .filter((p) => p.isOverdue)
     .reduce((sum, p) => sum + p.dueAmount, 0);
+
+  const columns = [
+    "Student",
+    "Course",
+    "Semester",
+    "Due Amount",
+    "Due Date",
+    "Status",
+    "Progress",
+  ];
+
+  const renderRow = (item, index) => (
+  <tr
+    key={`${item.studentId}-${item.semester}-${index}`}
+    className="hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+  >
+    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+      <div>
+        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          {item.studentName}
+        </p>
+      </div>
+    </td>
+
+    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+      <span className="text-sm text-gray-700 dark:text-gray-200">
+        {item.course}
+      </span>
+    </td>
+
+    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+      <div>
+        <span
+          className={`px-2 py-1 inline-flex text-xs leading-5 font-medium rounded-md ${
+            item.isBlocked
+              ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200"
+              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+          }`}
+        >
+          Semester {item.semester}
+        </span>
+
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Current: Sem {item.currentSemester}
+        </p>
+
+        {item.isBlocked && (
+          <p className="text-xs text-red-600 dark:text-red-400 mt-1 font-medium">
+            Must clear first
+          </p>
+        )}
+      </div>
+    </td>
+
+    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        {formatCurrency(item.dueAmount)}
+      </p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        Total: {formatCurrency(item.totalSemesterFee)}
+      </p>
+    </td>
+
+    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+      <div className="flex items-center text-sm text-gray-700 dark:text-gray-200">
+        <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+        <div>
+          <p className="font-medium">{formatDate(item.dueDate)}</p>
+
+          {item.daysUntilDue !== null && (
+            <p
+              className={`text-xs ${
+                item.isOverdue
+                  ? "text-red-600 dark:text-red-400"
+                  : item.daysUntilDue <= 7
+                  ? "text-yellow-600 dark:text-yellow-400"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              {item.isOverdue
+                ? `${Math.abs(item.daysUntilDue)} days overdue`
+                : `${item.daysUntilDue} days remaining`}
+            </p>
+          )}
+        </div>
+      </div>
+    </td>
+
+    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+      <span
+        className={`px-3 py-1 inline-flex items-center text-xs leading-5 font-medium rounded-md ${
+          item.isOverdue
+            ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200"
+            : item.daysUntilDue !== null && item.daysUntilDue <= 7
+            ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200"
+            : "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200"
+        }`}
+      >
+        {item.isOverdue ? (
+          <>Overdue</>
+        ) : item.daysUntilDue !== null && item.daysUntilDue <= 7 ? (
+          <>Due Soon</>
+        ) : (
+          "Pending"
+        )}
+      </span>
+    </td>
+
+    <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+      <div className="w-32">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div
+            className="bg-gray-600 dark:bg-gray-300 h-2 rounded-full"
+            style={{
+              width: `${(item.paidAmount / item.totalSemesterFee) * 100}%`,
+            }}
+          ></div>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {Math.round(
+            (item.paidAmount / item.totalSemesterFee) * 100
+          )}% paid
+        </p>
+      </div>
+    </td>
+  </tr>
+);
+
 
   if (loading) {
     return <LoadingSpinner message="Loading due payments..." />;
@@ -262,7 +414,7 @@ const DuePayments = () => {
         <div className="overflow-x-auto">
           {calculateDuePayments.length > 0 ? (
             <>
-              <table className="w-full hidden md:table">
+              {/* <table className="w-full hidden md:table">
                 <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                   <tr>
                     <th className="px-4 md:px-6 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">
@@ -311,13 +463,15 @@ const DuePayments = () => {
                       </td>
                       <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                         <div>
-                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-medium rounded-md ${
-                            item.isBlocked 
-                              ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700'
-                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600'
-                          }`}>
+                          <span
+                            className={`px-2 py-1 inline-flex text-xs leading-5 font-medium rounded-md ${
+                              item.isBlocked
+                                ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600"
+                            }`}
+                          >
                             Semester {item.semester}
-                            {item.isBlocked && ' ⚠️'}
+                            {item.isBlocked && " ⚠️"}
                           </span>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             Current: Sem {item.currentSemester}
@@ -341,7 +495,9 @@ const DuePayments = () => {
                         <div className="flex items-center text-sm text-gray-700 dark:text-gray-200">
                           <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                           <div>
-                            <p className="font-medium">{formatDate(item.dueDate)}</p>
+                            <p className="font-medium">
+                              {formatDate(item.dueDate)}
+                            </p>
                             {item.daysUntilDue !== null && (
                               <p
                                 className={`text-xs ${
@@ -353,7 +509,9 @@ const DuePayments = () => {
                                 }`}
                               >
                                 {item.isOverdue
-                                  ? `${Math.abs(item.daysUntilDue)} days overdue`
+                                  ? `${Math.abs(
+                                      item.daysUntilDue
+                                    )} days overdue`
                                   : `${item.daysUntilDue} days remaining`}
                               </p>
                             )}
@@ -365,7 +523,8 @@ const DuePayments = () => {
                           className={`px-3 py-1 inline-flex items-center text-xs leading-5 font-medium rounded-md ${
                             item.isOverdue
                               ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 border border-red-200"
-                              : item.daysUntilDue !== null && item.daysUntilDue <= 7
+                              : item.daysUntilDue !== null &&
+                                item.daysUntilDue <= 7
                               ? "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 border border-yellow-200"
                               : "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border border-blue-200"
                           }`}
@@ -375,7 +534,8 @@ const DuePayments = () => {
                               <AlertCircle className="w-3 h-3 mr-1" />
                               Overdue
                             </>
-                          ) : item.daysUntilDue !== null && item.daysUntilDue <= 7 ? (
+                          ) : item.daysUntilDue !== null &&
+                            item.daysUntilDue <= 7 ? (
                             <>
                               <Clock className="w-3 h-3 mr-1" />
                               Due Soon
@@ -391,19 +551,33 @@ const DuePayments = () => {
                             <div
                               className="bg-gray-600 dark:bg-gray-300 h-2 rounded-full"
                               style={{
-                                width: `${(item.paidAmount / item.totalSemesterFee) * 100}%`,
+                                width: `${
+                                  (item.paidAmount / item.totalSemesterFee) *
+                                  100
+                                }%`,
                               }}
                             ></div>
                           </div>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {Math.round((item.paidAmount / item.totalSemesterFee) * 100)}% paid
+                            {Math.round(
+                              (item.paidAmount / item.totalSemesterFee) * 100
+                            )}
+                            % paid
                           </p>
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table> */}
+
+              <DataTable
+                columns={columns}
+                data={calculateDuePayments}
+                loading={loading}
+                className="my-custom-table"
+                renderRow={renderRow}
+              />
 
               {/* Mobile view */}
               <div className="md:hidden p-3 space-y-3">
@@ -421,7 +595,8 @@ const DuePayments = () => {
                           {item.rollNumber} • {item.course}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          Semester {item.semester} • Current: Sem {item.currentSemester}
+                          Semester {item.semester} • Current: Sem{" "}
+                          {item.currentSemester}
                         </p>
                         {item.isBlocked && (
                           <p className="text-xs text-red-600 dark:text-red-400 mt-1 font-medium">
@@ -444,12 +619,17 @@ const DuePayments = () => {
                         <div
                           className="bg-gray-600 dark:bg-gray-300 h-2 rounded-full"
                           style={{
-                            width: `${(item.paidAmount / item.totalSemesterFee) * 100}%`,
+                            width: `${
+                              (item.paidAmount / item.totalSemesterFee) * 100
+                            }%`,
                           }}
                         ></div>
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        {Math.round((item.paidAmount / item.totalSemesterFee) * 100)}% paid
+                        {Math.round(
+                          (item.paidAmount / item.totalSemesterFee) * 100
+                        )}
+                        % paid
                       </p>
                     </div>
                   </div>

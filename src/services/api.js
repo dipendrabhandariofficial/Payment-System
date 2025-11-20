@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
 
 const API_URL = 'http://localhost:3000';
 
@@ -22,11 +23,19 @@ export const register = async (userData) => {
   return response.data;
 };
 
+const { data, isPending, error } = useQuery({
+    queryKey: ['register', userData],
+    queryFn: register,
+  })
+
+
 // Student APIs
 export const getStudents = async () => {
   const response = await api.get('/students');
   return response.data;
 };
+
+
 
 export const getStudentById = async (id) => {
   const response = await api.get(`/students/${id}`);

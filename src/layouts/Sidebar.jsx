@@ -37,6 +37,7 @@ const Sidebar = ({ open, onClose }) => {
 
       {/* Sidebar */}
       <aside
+      
         className={`
           fixed sm:static inset-y-0 left-0 z-50
           w-64 bg-gray-100 dark:bg-gray-900 dark:text-gray-100
