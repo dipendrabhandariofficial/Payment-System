@@ -13,7 +13,7 @@ const api = axios.create({
 export const login = async (email, password) => {
   const response = await api.get(`/users?email=${email}&password=${password}`);
   console.log("🚀 ~ login ~ response:", response)
-  
+
   return response.data[0];
 };
 

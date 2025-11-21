@@ -19,19 +19,18 @@ import {
   courses as initialCourses,
   generateSemesterFees,
 } from "../data/courses";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Students = () => {
-  const hello = "hello";
-  const [students, setStudents] = useState([]);
+  const queryClient = useQueryClient();
   const [filteredStudents, setFilteredStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -51,9 +50,67 @@ const Students = () => {
   });
   const [selectedCourse, setSelectedCourse] = useState();
 
-  useEffect(() => {
-    fetchStudents();
-  }, []);
+  // React Query: Fetch students
+  const { isPending, error: queryError, data: students = [] } = useQuery({
+    queryKey: ['students'],
+    queryFn: getStudents,
+  });
+
+  // React Query: Add student mutation
+  const addStudentMutation = useMutation({
+    mutationFn: addStudent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      setSuccess(true);
+      setTimeout(() => {
+        setShowModal(false);
+        resetForm();
+        setSuccess(false);
+      }, 1000);
+    },
+    onError: (error) => {
+      console.error("Error adding student:", error);
+      setError("Failed to add student. Please try again.");
+    },
+    onSettled: () => {
+      setSubmitting(false);
+    },
+  });
+
+  // React Query: Update student mutation
+  const updateStudentMutation = useMutation({
+    mutationFn: ({ id, data }) => updateStudent(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      setSuccess(true);
+      setTimeout(() => {
+        setShowEditModal(false);
+        setSelectedStudent(null);
+        setSelectedCourse(null);
+        resetForm();
+        setSuccess(false);
+      }, 1000);
+    },
+    onError: (error) => {
+      console.error("Error updating student:", error);
+      setError("Failed to update student. Please try again.");
+    },
+    onSettled: () => {
+      setSubmitting(false);
+    },
+  });
+
+  // React Query: Delete student mutation
+  const deleteStudentMutation = useMutation({
+    mutationFn: deleteStudent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+    },
+    onError: (error) => {
+      console.error("Error deleting student:", error);
+      setError("Failed to delete student. Please try again.");
+    },
+  });
 
   // Get courses from localStorage or use initial courses
   const getCourses = () => {
@@ -63,26 +120,42 @@ const Students = () => {
 
   const courses = getCourses();
 
+  // Filter students based on search term
   useEffect(() => {
-    const filtered = students.filter(
-      (student) =>
-        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.course.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredStudents(filtered);
+    if (students && students.length > 0) {
+      const filtered = students.filter(
+        (student) =>
+          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.course.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredStudents(filtered);
+    } else {
+      setFilteredStudents([]);
+    }
   }, [searchTerm, students]);
 
-  const fetchStudents = async () => {
-    try {
-      const data = await getStudents();
-      setStudents(data);
-      setFilteredStudents(data);
-    } catch (error) {
-      console.error("Error fetching students:", error);
-    } finally {
-      setLoading(false);
-    }
+  // Helper function to reset form
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      rollNumber: "",
+      email: "",
+      phone: "",
+      address: "",
+      guardianName: "",
+      guardianPhone: "",
+      guardianRelation: "",
+      admissionDate: new Date().toISOString().split("T")[0],
+      courseId: "",
+      course: "",
+      semester: "1",
+      totalFees: "",
+      semesterFees: [],
+    });
+    setSelectedCourse(null);
+    setError("");
+    setSuccess(false);
   };
 
   const handleChange = (e) => {
@@ -152,36 +225,10 @@ const Students = () => {
         semesterFees: formData.semesterFees || [],
       };
 
-      await addStudent(studentData);
-      setSuccess(true);
-      fetchStudents();
-
-      // Reset form and close modal after a short delay
-      setTimeout(() => {
-        setShowModal(false);
-        setFormData({
-          name: "",
-          rollNumber: "",
-          email: "",
-          phone: "",
-          address: "",
-          guardianName: "",
-          guardianPhone: "",
-          guardianRelation: "",
-          admissionDate: new Date().toISOString().split("T")[0],
-          courseId: "",
-          course: "",
-          semester: "1",
-          totalFees: "",
-          semesterFees: [],
-        });
-        setSelectedCourse(null);
-        setSuccess(false);
-      }, 1000);
+      addStudentMutation.mutate(studentData);
     } catch (error) {
       console.error("Error adding student:", error);
       setError("Failed to add student. Please try again.");
-    } finally {
       setSubmitting(false);
     }
   };
@@ -189,25 +236,7 @@ const Students = () => {
   const handleCloseModal = () => {
     if (!submitting) {
       setShowModal(false);
-      setFormData({
-        name: "",
-        rollNumber: "",
-        email: "",
-        phone: "",
-        address: "",
-        guardianName: "",
-        guardianPhone: "",
-        guardianRelation: "",
-        admissionDate: new Date().toISOString().split("T")[0],
-        courseId: "",
-        course: "",
-        semester: "1",
-        totalFees: "",
-        semesterFees: [],
-      });
-      setSelectedCourse(null);
-      setError("");
-      setSuccess(false);
+      resetForm();
     }
   };
 
@@ -258,13 +287,7 @@ const Students = () => {
 
   const handleDelete = async (student) => {
     if (window.confirm(`Are you sure you want to delete ${student.name}?`)) {
-      try {
-        await deleteStudent(student.id);
-        fetchStudents();
-      } catch (error) {
-        console.error("Error deleting student:", error);
-        setError("Failed to delete student. Please try again.");
-      }
+      deleteStudentMutation.mutate(student.id);
     }
   };
 
@@ -294,36 +317,10 @@ const Students = () => {
         semesterFees: formData.semesterFees || [],
       };
 
-      await updateStudent(selectedStudent.id, studentData);
-      setSuccess(true);
-      fetchStudents();
-
-      setTimeout(() => {
-        setShowEditModal(false);
-        setSelectedStudent(null);
-        setSelectedCourse(null);
-        setFormData({
-          name: "",
-          rollNumber: "",
-          email: "",
-          phone: "",
-          address: "",
-          guardianName: "",
-          guardianPhone: "",
-          guardianRelation: "",
-          admissionDate: new Date().toISOString().split("T")[0],
-          courseId: "",
-          course: "",
-          semester: "1",
-          totalFees: "",
-          semesterFees: [],
-        });
-        setSuccess(false);
-      }, 1000);
+      updateStudentMutation.mutate({ id: selectedStudent.id, data: studentData });
     } catch (error) {
       console.error("Error updating student:", error);
       setError("Failed to update student. Please try again.");
-    } finally {
       setSubmitting(false);
     }
   };
@@ -333,29 +330,22 @@ const Students = () => {
       setShowEditModal(false);
       setSelectedStudent(null);
       setSelectedCourse(null);
-      setFormData({
-        name: "",
-        rollNumber: "",
-        email: "",
-        phone: "",
-        address: "",
-        guardianName: "",
-        guardianPhone: "",
-        guardianRelation: "",
-        admissionDate: new Date().toISOString().split("T")[0],
-        courseId: "",
-        course: "",
-        semester: "1",
-        totalFees: "",
-        semesterFees: [],
-      });
-      setError("");
-      setSuccess(false);
+      resetForm();
     }
   };
 
-  if (loading) {
+  // Show loading state
+  if (isPending) {
     return <LoadingSpinner message="Loading students..." />;
+  }
+
+  // Show error state
+  if (queryError) {
+    return (
+      <PageLayout title="Students" subtitle="Get the information of the students">
+        <MessageAlert type="error" message={`Error loading students: ${queryError.message}`} />
+      </PageLayout>
+    );
   }
 
   const formatCurrency = (amount) => {
@@ -403,7 +393,7 @@ const Students = () => {
       <DataTable
         columns={tableColumns}
         data={filteredStudents}
-        loading={loading}
+        loading={isPending}
         emptyMessage="No students found"
         renderRow={(student) => (
           <tr
