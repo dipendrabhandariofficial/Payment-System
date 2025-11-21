@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const useInfiniteScroll = ({ items = [], pageSize = 10 }) => {
+const useInfiniteScroll = ({ items = [], pageSize = 10 ,rootRef=null }) => {
   const [displayCount, setDisplayCount] = useState(pageSize);
   const loaderRef = useRef(null);
   const observerRef = useRef(null);
@@ -25,6 +25,7 @@ const useInfiniteScroll = ({ items = [], pageSize = 10 }) => {
         }
       },
       { 
+         root: rootRef?.current,
         threshold: 0.1,
         rootMargin: '100px' 
       }

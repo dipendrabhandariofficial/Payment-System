@@ -3,9 +3,6 @@ import LoadingSpinner from "./LoadingSpinner";
 import { useRef } from "react";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
 
-
-
-
 const DataTable = ({
   columns,
   className,
@@ -16,12 +13,19 @@ const DataTable = ({
   emptyIcon: EmptyIcon,
   loading = false,
 }) => {
+  const desktopRootRef = useRef(null);
+  const mobileRootRef = useRef(null);
+  
+  // Separate infinite scroll hooks for desktop and mobile
+  const desktopScroll = useInfiniteScroll({ items: data || [], pageSize: 10,rootRef:desktopRootRef });
+  const mobileScroll = useInfiniteScroll({ items: data || [], pageSize: 5 ,rootRef:mobileRootRef });
+  
+  // Get visible items, fallback to empty array if undefined
+const desktopVisibleItems = desktopScroll?.paginatedItems || [];
+const mobileVisibleItems = mobileScroll?.paginatedItems || [];
   if (loading) {
     return <LoadingSpinner message="Loading data..." size="w-10 h-10" />;
   }
-  const rootRef = useRef(null);
-
-  const { loaderRef, hasMore } = useInfiniteScroll({ items: data, pageSize: 5 });
 
   if (!data || data.length === 0) {
     return (
@@ -42,47 +46,45 @@ const DataTable = ({
     <>
       {/* Desktop Table View - hidden on small screens */}
       <div className="hidden lg:block dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-  {/* Scrollable fixed-height container */}
-  <div
-    ref={rootRef}
-    className="max-h-[500px] overflow-y-auto"
-  >
-    <table className="w-full min-w-max table-auto border-collapse">
-      <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-        <tr>
-          {columns.map((column, index) => (
-            <th
-              key={index}
-              className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap"
-            >
-              {column}
-            </th>
-          ))}
-        </tr>
-      </thead>
-
-      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
-        {data.map((item, index) => renderRow(item, index))}
-
-        {/* Loader for infinite scroll */}
-        {hasMore && (
-          <tr>
-            <td colSpan={columns.length}>
-              <div ref={loaderRef} className="py-4 text-center text-gray-500">
-                Loading...
-              </div>
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-  </div>
-</div>
-
+        <div
+          ref={desktopRootRef}
+          className="max-h-[500px] overflow-y-auto"
+        >
+          <table className="w-full min-w-max table-auto border-collapse">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+              <tr>
+                {columns.map((column, index) => (
+                  <th
+                    key={index}
+                    className="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    {column}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+              {desktopVisibleItems.map((item, index) => renderRow(item, index))}
+              {desktopScroll?.hasMore && (
+                <tr>
+                  <td colSpan={columns.length}>
+                    <div ref={desktopScroll.loaderRef} className="py-4 text-center text-gray-500">
+                      Loading...
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {/* Mobile/Tablet Card View - visible on small/medium screens */}
-      <div className="lg:hidden space-y-4">
-        {data.map((item, index) => (
+      <div 
+        ref={mobileRootRef}
+        className="lg:hidden space-y-4 max-h-[600px] overflow-y-auto px-2"
+      >
+        {mobileVisibleItems.map((item, index) => (
           <div key={index}>
             {renderCard ? (
               renderCard(item, index)
@@ -104,6 +106,11 @@ const DataTable = ({
             )}
           </div>
         ))}
+        {mobileScroll?.hasMore && (
+          <div ref={mobileScroll.loaderRef} className="py-4 text-center text-gray-500">
+            Loading...
+          </div>
+        )}
       </div>
     </>
   );

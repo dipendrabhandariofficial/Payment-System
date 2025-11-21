@@ -23,7 +23,6 @@ import {
 
 
 const Students = () => {
-  const hello = "hello";
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -76,22 +75,22 @@ const Students = () => {
     setFilteredStudents(filtered);
   }, [searchTerm, students]);
 
-  // const fetchStudents = async () => {
-  //   try {
-  //     const data = await getStudents();
-  //     setStudents(data);
-  //     setFilteredStudents(data);
-  //   } catch (error) {
-  //     console.error("Error fetching students:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  const fetchStudents = async () => {
+    try {
+      const data = await getStudents();
+      setStudents(data);
+      setFilteredStudents(data);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const { data: studentsData, isPending: studentsPending, error: studentsError } = useQuery({
-    queryKey: ['students'],
-    queryFn: getStudents,
-  })
+  // const { data: studentsData, isPending: studentsPending, error: studentsError } = useQuery({
+  //   queryKey: ['students'],
+  //   queryFn: getStudents,
+  // })
 
   // Generate unique roll number
   const generateRollNumber = (courseName, admissionDate) => {
