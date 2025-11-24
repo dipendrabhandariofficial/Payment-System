@@ -9,4 +9,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Cursor pointer for all interactive elements */
+button,
+[role="button"],
+[type="button"],
+[type="submit"],
+[type="reset"],
+label[for],
+a,
+select,
+.cursor-pointer,
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"] {
+  cursor: pointer;
+}
+
+/* Ensure disabled elements show not-allowed cursor */
+button:disabled,
+[type="button"]:disabled,
+[type="submit"]:disabled,
+[type="reset"]:disabled,
+select:disabled,
+input:disabled {
+  cursor: not-allowed;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
