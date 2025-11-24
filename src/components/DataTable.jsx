@@ -58,7 +58,7 @@ const DataTable = ({
                 {columns.map((column, index) => (
                   <th
                     key={index}
-                    className="px-4 py-3 sm:px-6 sm:py-4 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap"
+                    className="px-3 py-2 sm:px-6 sm:py-4 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider whitespace-nowrap"
                   >
                     {column}
                   </th>
@@ -70,7 +70,7 @@ const DataTable = ({
               {desktopScroll?.hasMore && (
                 <tr>
                   <td colSpan={columns.length}>
-                    <div ref={desktopScroll.loaderRef} className="py-4 text-center text-gray-500 text-sm">
+                    <div ref={desktopScroll.loaderRef} className="py-2 text-center text-gray-500 text-[8px]">
                       Loading more...
                     </div>
                   </td>

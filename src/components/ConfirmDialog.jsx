@@ -18,7 +18,7 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
       />
       
       {/* Dialog */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 animate-scale-in">
+      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full  p-6 animate-scale-in">
         {/* Close button */}
         <button
           onClick={onClose}

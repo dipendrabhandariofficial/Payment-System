@@ -698,63 +698,6 @@
       "rowNum": 2
     },
     {
-      "id": "1e89",
-      "name": "Somnath",
-      "email": "jane@example.com",
-      "phone": "9876543212",
-      "courseId": "bsc-cs",
-      "course": "Bachelor of Science in Computer Science",
-      "admissionDate": "2025-11-20",
-      "semester": "1",
-      "address": "Pokhara",
-      "guardianName": "John Smith",
-      "guardianPhone": "9876543213",
-      "guardianRelation": "Father",
-      "rollNumber": "BOSICS-20251120-006-1",
-      "totalFees": 300000,
-      "semesterFees": [
-        {
-          "semester": "1",
-          "amount": 50000,
-          "dueDate": "2025-11-20",
-          "paid": false
-        },
-        {
-          "semester": "2",
-          "amount": 50000,
-          "dueDate": "2026-05-20",
-          "paid": false
-        },
-        {
-          "semester": "3",
-          "amount": 50000,
-          "dueDate": "2026-11-20",
-          "paid": false
-        },
-        {
-          "semester": "4",
-          "amount": 50000,
-          "dueDate": "2027-05-20",
-          "paid": false
-        },
-        {
-          "semester": "5",
-          "amount": 50000,
-          "dueDate": "2027-11-20",
-          "paid": false
-        },
-        {
-          "semester": "6",
-          "amount": 50000,
-          "dueDate": "2028-05-20",
-          "paid": false
-        }
-      ],
-      "paidFees": 0,
-      "pendingFees": 300000,
-      "rowNum": 3
-    },
-    {
       "id": "5e5e",
       "name": "John Doe",
       "email": "john@example.com",
