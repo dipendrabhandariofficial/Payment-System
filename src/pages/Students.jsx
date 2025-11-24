@@ -22,7 +22,7 @@ import {
   courses as initialCourses,
   generateSemesterFees,
 } from "../data/courses";
-// ✅ REACT QUERY: Import useQuery for fetching data and useMutation for CRUD operations
+// REACT QUERY: Import useQuery for fetching data and useMutation for CRUD operations
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 
@@ -64,7 +64,7 @@ const Students = () => {
   //   fetchStudents();
   // }, []);
 
-  // ✅ REACT QUERY: Fetch students using useQuery instead of manual useState + useEffect
+  // REACT QUERY: Fetch students using useQuery instead of manual useState + useEffect
   // OLD WAY: const [students, setStudents] = useState([]); + useEffect(() => fetchStudents(), []);
   // NEW WAY: useQuery automatically handles loading, error, and caching
   const { data: students = [], isLoading, error, refetch, isError } = useQuery({
@@ -72,7 +72,7 @@ const Students = () => {
     queryFn: getStudents,   // API function to fetch data
   });
 
-  // ✅ REACT QUERY: Get queryClient to invalidate queries after mutations
+  //  REACT QUERY: Get queryClient to invalidate queries after mutations
   const queryClient = useQueryClient();
   
   // Get courses from localStorage or use initial courses
@@ -93,7 +93,7 @@ const Students = () => {
     setFilteredStudents(filtered);
   }, [searchTerm, students]);
 
-  // ❌ OLD WAY: Manual fetchStudents function - NO LONGER NEEDED with React Query
+  //  OLD WAY: Manual fetchStudents function - NO LONGER NEEDED with React Query
   // const fetchStudents = async () => {
   //   try {
   //     const data = await getStudents();
@@ -107,7 +107,7 @@ const Students = () => {
   //   }
   // };
 
-  // ✅ REACT QUERY: useMutation for adding a student
+  //  REACT QUERY: useMutation for adding a student
   // OLD WAY: Manual try-catch in handleSubmit with await addStudent() + fetchStudents()
   // NEW WAY: useMutation handles loading state, error handling, and auto-refetch
   const addStudentMutation = useMutation({
@@ -142,7 +142,7 @@ const Students = () => {
     },
   });
 
-  // ✅ REACT QUERY: useMutation for updating a student
+  //  REACT QUERY: useMutation for updating a student
   const updateStudentMutation = useMutation({
     mutationFn: ({ id, data }) => updateStudent(id, data),
     onSuccess: () => {
@@ -174,7 +174,7 @@ const Students = () => {
     },
   });
 
-  // ✅ REACT QUERY: useMutation for deleting a student
+  // REACT QUERY: useMutation for deleting a student
   const deleteStudentMutation = useMutation({
     mutationFn: deleteStudent,
     onSuccess: () => {
@@ -187,7 +187,7 @@ const Students = () => {
     },
   });
 
-  // ✅ REACT QUERY: useMutation for bulk delete
+  //  REACT QUERY: useMutation for bulk delete
   const bulkDeleteMutation = useMutation({
     mutationFn: async (studentIds) => {
       const deletePromises = studentIds.map(studentId => 
@@ -244,7 +244,7 @@ const Students = () => {
         await addStudent(studentData);
       }
 
-      // ✅ REACT QUERY: Refetch using queryClient instead of manual fetchStudents()
+      //  REACT QUERY: Refetch using queryClient instead of manual fetchStudents()
       // OLD WAY: await fetchStudents();
       // NEW WAY: queryClient.invalidateQueries() triggers automatic refetch
       queryClient.invalidateQueries(["students"]);

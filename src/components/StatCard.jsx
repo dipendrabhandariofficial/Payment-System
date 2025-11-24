@@ -22,12 +22,12 @@ const StatCard = ({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-gray-400 text-sm font-medium mb-1">{title}</p>
-          <p className={`text-3xl font-bold  ${valueColor}`}>{value}</p>
+          <p className={`text-2xl font-bold  ${valueColor}`}>{value}</p>
           {subtitle && <p className="text-xs  mt-1">{subtitle}</p>}
         </div>
         {Icon && (
           <div className={`${iconBg} rounded-lg p-3`}>
-            <Icon className={`w-8 h-8 ${iconColor}`} />
+            <Icon className={`w-6 h-6 ${iconColor}`} />
           </div>
         )}
       </div>
