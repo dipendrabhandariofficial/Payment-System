@@ -17,118 +17,6 @@
   ],
   "students": [
     {
-      "name": "Dipendra Bhandari",
-      "rollNumber": "1234",
-      "email": "dipendra@gmail.com",
-      "phone": "123456",
-      "address": "",
-      "guardianName": "",
-      "guardianPhone": "",
-      "guardianRelation": "",
-      "admissionDate": "2025-11-17",
-      "courseId": "bsc-cs",
-      "course": "Bachelor of Science in Computer Science",
-      "semester": "2",
-      "totalFees": 300000,
-      "semesterFees": [
-        {
-          "semester": "1",
-          "amount": 50000,
-          "dueDate": "2025-11-17",
-          "paid": false
-        },
-        {
-          "semester": "2",
-          "amount": 50000,
-          "dueDate": "2026-05-17",
-          "paid": false
-        },
-        {
-          "semester": "3",
-          "amount": 50000,
-          "dueDate": "2026-11-17",
-          "paid": false
-        },
-        {
-          "semester": "4",
-          "amount": 50000,
-          "dueDate": "2027-05-17",
-          "paid": false
-        },
-        {
-          "semester": "5",
-          "amount": 50000,
-          "dueDate": "2027-11-17",
-          "paid": false
-        },
-        {
-          "semester": "6",
-          "amount": 50000,
-          "dueDate": "2028-05-17",
-          "paid": false
-        }
-      ],
-      "paidFees": 150000,
-      "pendingFees": 150000,
-      "id": "dc6c"
-    },
-    {
-      "id": "0e71",
-      "name": "Sita",
-      "rollNumber": "123",
-      "email": "sita@gmail.com",
-      "phone": "fds",
-      "address": "",
-      "guardianName": "",
-      "guardianPhone": "",
-      "guardianRelation": "",
-      "admissionDate": "2025-11-18",
-      "courseId": "bcom",
-      "course": "Bachelor of Commerce",
-      "semester": "1",
-      "totalFees": 210000,
-      "semesterFees": [
-        {
-          "semester": "1",
-          "amount": 35000,
-          "dueDate": "2025-11-18",
-          "paid": false
-        },
-        {
-          "semester": "2",
-          "amount": 35000,
-          "dueDate": "2026-05-18",
-          "paid": false
-        },
-        {
-          "semester": "3",
-          "amount": 35000,
-          "dueDate": "2026-11-18",
-          "paid": false
-        },
-        {
-          "semester": "4",
-          "amount": 35000,
-          "dueDate": "2027-05-18",
-          "paid": false
-        },
-        {
-          "semester": "5",
-          "amount": 35000,
-          "dueDate": "2027-11-18",
-          "paid": false
-        },
-        {
-          "semester": "6",
-          "amount": 35000,
-          "dueDate": "2028-05-18",
-          "paid": false
-        }
-      ],
-      "paidFees": 35000,
-      "pendingFees": 175000
-    },
-    {
       "id": "bb8a",
       "name": "gita ",
       "rollNumber": "123",
@@ -867,62 +755,6 @@
       "rowNum": 3
     },
     {
-      "id": "5d5e",
-      "name": "cool",
-      "rollNumber": "BOSIIT-20251120-001",
-      "email": "cool@gmail.com",
-      "phone": "12345",
-      "address": "",
-      "guardianName": "",
-      "guardianPhone": "",
-      "guardianRelation": "",
-      "admissionDate": "2025-11-20",
-      "courseId": "bsc-it",
-      "course": "Bachelor of Science in Information Technology",
-      "semester": "1",
-      "totalFees": 288000,
-      "semesterFees": [
-        {
-          "semester": "1",
-          "amount": 48000,
-          "dueDate": "2025-11-20",
-          "paid": false
-        },
-        {
-          "semester": "2",
-          "amount": 48000,
-          "dueDate": "2026-05-20",
-          "paid": false
-        },
-        {
-          "semester": "3",
-          "amount": 48000,
-          "dueDate": "2026-11-20",
-          "paid": false
-        },
-        {
-          "semester": "4",
-          "amount": 48000,
-          "dueDate": "2027-05-20",
-          "paid": false
-        },
-        {
-          "semester": "5",
-          "amount": 48000,
-          "dueDate": "2027-11-20",
-          "paid": false
-        },
-        {
-          "semester": "6",
-          "amount": 48000,
-          "dueDate": "2028-05-20",
-          "paid": false
-        }
-      ],
-      "paidFees": 0,
-      "pendingFees": 288000
-    },
-    {
       "id": "5e5e",
       "name": "John Doe",
       "email": "john@example.com",
@@ -978,63 +810,6 @@
       "paidFees": 0,
       "pendingFees": 300000,
       "rowNum": 2
-    },
-    {
-      "id": "3553",
-      "name": "Jane Smith",
-      "email": "jane@example.com",
-      "phone": "9876543212",
-      "courseId": "bsc-cs",
-      "course": "Bachelor of Science in Computer Science",
-      "admissionDate": "2025-11-20",
-      "semester": "1",
-      "address": "Pokhara",
-      "guardianName": "John Smith",
-      "guardianPhone": "9876543213",
-      "guardianRelation": "Father",
-      "rollNumber": "BOSICS-20251120-009-1",
-      "totalFees": 300000,
-      "semesterFees": [
-        {
-          "semester": "1",
-          "amount": 50000,
-          "dueDate": "2025-11-20",
-          "paid": false
-        },
-        {
-          "semester": "2",
-          "amount": 50000,
-          "dueDate": "2026-05-20",
-          "paid": false
-        },
-        {
-          "semester": "3",
-          "amount": 50000,
-          "dueDate": "2026-11-20",
-          "paid": false
-        },
-        {
-          "semester": "4",
-          "amount": 50000,
-          "dueDate": "2027-05-20",
-          "paid": false
-        },
-        {
-          "semester": "5",
-          "amount": 50000,
-          "dueDate": "2027-11-20",
-          "paid": false
-        },
-        {
-          "semester": "6",
-          "amount": 50000,
-          "dueDate": "2028-05-20",
-          "paid": false
-        }
-      ],
-      "paidFees": 0,
-      "pendingFees": 300000,
-      "rowNum": 3
     },
     {
       "id": "9c35",
@@ -1190,7 +965,7 @@
     },
     {
       "id": "2482",
-      "studentId": "dc6c",
+      "studentId": null,
       "studentName": "Dipendra ",
       "rollNumber": "123",
       "amount": 50000,
@@ -1208,7 +983,7 @@
     },
     {
       "id": "0de2",
-      "studentId": "0e71",
+      "studentId": null,
       "studentName": "Sita",
       "rollNumber": "123",
       "amount": 35000,
@@ -1244,7 +1019,7 @@
     },
     {
       "id": "31e1",
-      "studentId": "dc6c",
+      "studentId": null,
       "studentName": "Dipendra ",
       "rollNumber": "123",
       "amount": 200,
@@ -1262,7 +1037,7 @@
     },
     {
       "id": "c0ec",
-      "studentId": "dc6c",
+      "studentId": null,
       "studentName": "Dipendra ",
       "rollNumber": "123",
       "amount": 50000,
@@ -1352,7 +1127,7 @@
     },
     {
       "id": "f0df",
-      "studentId": "dc6c",
+      "studentId": null,
       "studentName": "Dipendra Bhandari",
       "rollNumber": "1234",
       "amount": 49800,

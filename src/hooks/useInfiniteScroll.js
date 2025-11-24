@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const useInfiniteScroll = ({ items = [], pageSize = 10 ,rootRef=null }) => {
+const useInfiniteScroll = ({ items = [], pageSize = 10, rootElement = null }) => {
   const [displayCount, setDisplayCount] = useState(pageSize);
   const loaderRef = useRef(null);
   const observerRef = useRef(null);
@@ -24,10 +24,10 @@ const useInfiniteScroll = ({ items = [], pageSize = 10 ,rootRef=null }) => {
           setDisplayCount((prev) => Math.min(prev + pageSize, items.length));
         }
       },
-      { 
-         root: rootRef?.current,
+      {
+        root: rootElement,
         threshold: 0.1,
-        rootMargin: '100px' 
+        rootMargin: '100px'
       }
     );
 
@@ -43,7 +43,7 @@ const useInfiniteScroll = ({ items = [], pageSize = 10 ,rootRef=null }) => {
         observerRef.current.disconnect();
       }
     };
-  }, [displayCount, items.length, pageSize]);
+  }, [displayCount, items.length, pageSize, rootElement]);
 
   const paginatedItems = items.slice(0, displayCount);
   const hasMore = displayCount < items.length;
@@ -54,9 +54,10 @@ const useInfiniteScroll = ({ items = [], pageSize = 10 ,rootRef=null }) => {
       totalItems: items.length,
       displayCount,
       hasMore,
-      pageSize
+      pageSize,
+      hasRoot: !!rootElement
     });
-  }, [displayCount, items.length, hasMore, pageSize]);
+  }, [displayCount, items.length, hasMore, pageSize, rootElement]);
 
   return {
     loaderRef,

@@ -1,4 +1,5 @@
 import React from "react";
+import { jsPDF } from "jspdf";
 import {
   X,
   FileText,
@@ -8,6 +9,7 @@ import {
   CreditCard,
   User,
   Hash,
+  Printer
 } from "lucide-react";
 
 const ReceiptModal = ({ payment, isOpen, onClose }) => {
@@ -28,6 +30,135 @@ const ReceiptModal = ({ payment, isOpen, onClose }) => {
     }).format(amount);
 
   const handlePrint = () => window.print();
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+
+    // Colors
+    const primaryColor = [41, 128, 185]; // Blue
+    const grayColor = [128, 128, 128];
+    const blackColor = [0, 0, 0];
+
+    // Header
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, 210, 40, "F");
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text("PAYMENT RECEIPT", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Receipt #${payment.receiptNumber}`, 105, 30, { align: "center" });
+
+    // School/System Name
+    doc.setTextColor(...blackColor);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Fee Management System", 105, 55, { align: "center" });
+
+    // Receipt Details Box
+    doc.setDrawColor(200, 200, 200);
+    doc.setFillColor(248, 249, 250);
+    doc.roundedRect(14, 65, 182, 25, 3, 3, "FD");
+
+    doc.setFontSize(10);
+    doc.setTextColor(...grayColor);
+    doc.text("Receipt Number", 20, 75);
+    doc.text("Payment Date", 140, 75);
+
+    doc.setFontSize(12);
+    doc.setTextColor(...blackColor);
+    doc.setFont("helvetica", "bold");
+    doc.text(payment.receiptNumber, 20, 83);
+    doc.text(formatDate(payment.paymentDate), 140, 83);
+
+    // Student Info Section
+    let yPos = 105;
+    doc.setFontSize(14);
+    doc.setTextColor(...primaryColor);
+    doc.text("Student Information", 14, yPos);
+    doc.line(14, yPos + 2, 200, yPos + 2); // Underline
+
+    yPos += 15;
+    doc.setFontSize(11);
+    doc.setTextColor(...grayColor);
+    doc.text("Student Name:", 14, yPos);
+    doc.setTextColor(...blackColor);
+    doc.text(payment.studentName, 60, yPos);
+
+    yPos += 10;
+    doc.setTextColor(...grayColor);
+    doc.text("Roll Number:", 14, yPos);
+    doc.setTextColor(...blackColor);
+    doc.text(payment.rollNumber, 60, yPos);
+
+    yPos += 10;
+    doc.setTextColor(...grayColor);
+    doc.text("Semester:", 14, yPos);
+    doc.setTextColor(...blackColor);
+    doc.text(`Sem ${payment.semester}`, 60, yPos);
+
+    // Payment Info Section
+    yPos += 20;
+    doc.setFontSize(14);
+    doc.setTextColor(...primaryColor);
+    doc.text("Payment Details", 14, yPos);
+    doc.line(14, yPos + 2, 200, yPos + 2);
+
+    yPos += 15;
+    doc.setFontSize(11);
+    doc.setTextColor(...grayColor);
+    doc.text("Amount Paid:", 14, yPos);
+    doc.setFontSize(14);
+    doc.setTextColor(...blackColor);
+    doc.setFont("helvetica", "bold");
+    doc.text(formatCurrency(payment.amount), 60, yPos);
+    
+    yPos += 12;
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...grayColor);
+    doc.text("Payment Method:", 14, yPos);
+    doc.setTextColor(...blackColor);
+    doc.text(payment.paymentMethod, 60, yPos);
+
+    yPos += 10;
+    doc.setTextColor(...grayColor);
+    doc.text("Status:", 14, yPos);
+    doc.setTextColor(...blackColor);
+    doc.text(payment.status, 60, yPos);
+
+    if (payment.transactionId) {
+      yPos += 10;
+      doc.setTextColor(...grayColor);
+      doc.text("Transaction ID:", 14, yPos);
+      doc.setTextColor(...blackColor);
+      doc.text(payment.transactionId, 60, yPos);
+    }
+
+    if (payment.remarks) {
+      yPos += 15;
+      doc.setTextColor(...grayColor);
+      doc.text("Remarks:", 14, yPos);
+      doc.setTextColor(...blackColor);
+      doc.text(payment.remarks, 60, yPos);
+    }
+
+    // Footer
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, pageHeight - 30, 196, pageHeight - 30);
+    
+    doc.setFontSize(9);
+    doc.setTextColor(...grayColor);
+    doc.text("This is a computer-generated receipt. No signature is required.", 105, pageHeight - 20, { align: "center" });
+    doc.text(`Generated on ${new Date().toLocaleString()}`, 105, pageHeight - 15, { align: "center" });
+
+    // Save
+    doc.save(`Receipt_${payment.receiptNumber}.pdf`);
+  };
 
   return (
     <>
@@ -227,10 +358,17 @@ const ReceiptModal = ({ payment, isOpen, onClose }) => {
             </button>
             <button
               onClick={handlePrint}
-              className="px-6 py-2.5 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-900 transition-colors flex items-center gap-2"
+              className="px-6 py-2.5 border-2 border-gray-800 text-gray-800 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center gap-2"
+            >
+              <Printer className="w-5 h-5" />
+              Print
+            </button>
+            <button
+              onClick={handleDownloadPDF}
+              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-200"
             >
               <Download className="w-5 h-5" />
-              Print / Download
+              Download PDF
             </button>
           </div>
         </div>
