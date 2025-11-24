@@ -24,7 +24,6 @@ import { courses as initialCourses, getCourseById } from "../data/courses";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageLayout from "../components/PageLayout";
 import SearchBar from "../components/Search";
-import { Dropdown } from "@dipendrabhandari/react-ui-library";
 
 const AddPayment = () => {
   const [students, setStudents] = useState([]);

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Upload, X, Download, CheckCircle, AlertTriangle, FileSpreadsheet, Loader2 } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx'
 
 const BulkStudentImport = ({ 
   isOpen, 
