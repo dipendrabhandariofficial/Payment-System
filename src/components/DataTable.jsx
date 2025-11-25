@@ -16,11 +16,19 @@ const DataTable = ({
   // Use state for refs to ensure hook gets the element when it's mounted
   const [desktopRoot, setDesktopRoot] = useState(null);
   const [mobileRoot, setMobileRoot] = useState(null);
-  
+
   // Separate infinite scroll hooks for desktop and mobile
-  const desktopScroll = useInfiniteScroll({ items: data || [], pageSize: 10, rootElement: desktopRoot });
-  const mobileScroll = useInfiniteScroll({ items: data || [], pageSize: 5, rootElement: mobileRoot });
-  
+  const desktopScroll = useInfiniteScroll({
+    items: data || [],
+    pageSize: 10,
+    rootElement: desktopRoot,
+  });
+  const mobileScroll = useInfiniteScroll({
+    items: data || [],
+    pageSize: 5,
+    rootElement: mobileRoot,
+  });
+
   // Get visible items, fallback to empty array if undefined
   const desktopVisibleItems = desktopScroll?.paginatedItems || [];
   const mobileVisibleItems = mobileScroll?.paginatedItems || [];
@@ -48,10 +56,7 @@ const DataTable = ({
     <>
       {/* Desktop Table View - hidden on small screens */}
       <div className="hidden lg:block dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div
-          ref={setDesktopRoot}
-          className="max-h-[500px] overflow-y-auto"
-        >
+        <div ref={setDesktopRoot} className="max-h-[500px] overflow-y-auto">
           <table className="w-full min-w-max table-auto border-collapse">
             <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
               <tr>
@@ -70,7 +75,10 @@ const DataTable = ({
               {desktopScroll?.hasMore && (
                 <tr>
                   <td colSpan={columns.length}>
-                    <div ref={desktopScroll.loaderRef} className="py-2 text-center text-gray-500 text-[8px]">
+                    <div
+                      ref={desktopScroll.loaderRef}
+                      className="py-2 text-center text-gray-500 text-[8px]"
+                    >
                       Loading more...
                     </div>
                   </td>
@@ -82,7 +90,7 @@ const DataTable = ({
       </div>
 
       {/* Mobile/Tablet Card View - visible on small/medium screens */}
-      <div 
+      <div
         ref={setMobileRoot}
         className="lg:hidden space-y-4 max-h-[600px] overflow-y-auto px-2"
       >
@@ -94,7 +102,10 @@ const DataTable = ({
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
                 <div className="space-y-3">
                   {columns.map((column, colIndex) => (
-                    <div key={colIndex} className="flex justify-between items-start gap-4">
+                    <div
+                      key={colIndex}
+                      className="flex justify-between items-start gap-4"
+                    >
                       <span className="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex-shrink-0">
                         {column}
                       </span>
@@ -109,7 +120,10 @@ const DataTable = ({
           </div>
         ))}
         {mobileScroll?.hasMore && (
-          <div ref={mobileScroll.loaderRef} className="py-4 text-center text-gray-500 text-sm">
+          <div
+            ref={mobileScroll.loaderRef}
+            className="py-4 text-center text-gray-500 text-sm"
+          >
             Loading more...
           </div>
         )}

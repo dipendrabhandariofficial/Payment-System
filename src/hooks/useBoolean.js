@@ -27,7 +27,6 @@ export const useBoolean = (initialValue = false) => {
             off,
             toggle,
             set,
-            // Aliases for better readability
             open: on,
             close: off,
             show: on,
