@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   User,
   Hash,
@@ -8,7 +8,10 @@ import {
   GraduationCap,
   DollarSign,
   Info,
+  AlertCircle,
 } from "lucide-react";
+// import { useFormValidation } from "../hooks/useFormValidation";
+import { useFormValidation } from "@dipendrabhandari/react-ui-library";
 
 const StudentForm = ({
   isEditMode = false,
@@ -20,13 +23,109 @@ const StudentForm = ({
   submitting = false,
   showPersonalInfo = true,
   showGuardianInfo = true,
+  onValidationChange,
 }) => {
+  // Define validation rules for the form
+  const validationRules = {
+    name: {
+      isRequired: true,
+      minLength: 2,
+      maxLength: 100,
+      msg: {
+        isRequired: "Student name is required",
+        minLength: "Name must be at least 2 characters",
+        maxLength: "Name must not exceed 100 characters",
+      },
+    },
+    email: {
+      isRequired: true,
+      pattern: "email",
+      msg: {
+        isRequired: "Email address is required",
+        pattern: "Please enter a valid email address",
+      },
+    },
+    phone: {
+      isRequired: true,
+      pattern: "phone",
+      msg: {
+        isRequired: "Phone number is required",
+        pattern: "Please enter a valid phone number (at least 10 digits)",
+      },
+    },
+    courseId: {
+      isRequired: true,
+      msg: {
+        isRequired: "Please select a course",
+      },
+    },
+    semester: {
+      isRequired: true,
+      min: 1,
+      max: selectedCourse?.totalSemesters || 8,
+      msg: {
+        isRequired: "Current semester is required",
+        min: "Semester must be at least 1",
+        max: `Semester cannot exceed ${selectedCourse?.totalSemesters || 8}`,
+      },
+    },
+    totalFees: {
+      isRequired: true,
+      min: 0,
+      msg: {
+        isRequired: "Total fees is required",
+        min: "Total fees cannot be negative",
+      },
+    },
+  };
+
+  // Initialize validation hook
+  const { errors, touched, handleBlur, showError, validateAll, setValues } =
+    useFormValidation(formData, validationRules, {
+      validateOnChange: false,
+      validateOnBlur: true,
+    });
+
+  // Sync formData changes from parent to validation hook
+  useEffect(() => {
+    setValues(formData);
+  }, [formData]);
+
+  // Notify parent about validation state changes
+  useEffect(() => {
+    if (onValidationChange) {
+      const isValid = validateAll();
+      onValidationChange(isValid, errors);
+    }
+  }, [errors, touched]);
+
   const handleCourseChange = (e) => {
     // Simply pass the event to the parent's onChange handler
     // The parent (Students.jsx) will handle all the logic
     if (onChange) {
       onChange(e);
     }
+  };
+
+  // Helper function to render error message
+  const renderError = (fieldName) => {
+    if (showError(fieldName)) {
+      return (
+        <div className="flex items-center gap-1 mt-1 text-xs text-red-600">
+          <AlertCircle className="w-3 h-3" />
+          <span>{errors[fieldName]}</span>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Helper function to get input border color based on validation state
+  const getInputBorderClass = (fieldName) => {
+    if (showError(fieldName)) {
+      return "border-red-300 focus:ring-red-400 focus:border-red-400";
+    }
+    return "border-gray-200 focus:ring-gray-400 focus:border-gray-400";
   };
 
   return (
@@ -39,7 +138,6 @@ const StudentForm = ({
               Personal Information
             </h3>
           </div>
-
           <div className="relative group">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Full Name <span className="text-red-500">*</span>
@@ -51,12 +149,16 @@ const StudentForm = ({
                 name="name"
                 value={formData.name}
                 onChange={onChange}
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 bg-white transition-all duration-200"
+                onBlur={handleBlur}
+                className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 bg-white transition-all duration-200 ${getInputBorderClass(
+                  "name"
+                )}`}
                 placeholder="Enter student name"
                 required
                 disabled={submitting}
               />
             </div>
+            {renderError("name")}
           </div>
 
           <div className="relative group">
@@ -65,10 +167,7 @@ const StudentForm = ({
             </label>
 
             <div className="relative">
-              <Hash
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400
-        group-focus-within:text-gray-600 transition-colors"
-              />
+              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-gray-600 transition-colors" />
 
               <input
                 type="text"
@@ -80,7 +179,7 @@ const StudentForm = ({
         ${
           isEditMode
             ? "bg-gray-200 cursor-not-allowed text-gray-500"
-            : "bg-white dark:bg-gray-800"
+            : "bg-white dark:bg-gray-800 focus:ring-gray-400 focus:border-gray-400 "
         }
       `}
                 placeholder="Enter Roll Number"
@@ -99,12 +198,16 @@ const StudentForm = ({
                 name="email"
                 value={formData.email}
                 onChange={onChange}
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 bg-white transition-all duration-200"
+                onBlur={handleBlur}
+                className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 bg-white transition-all duration-200 ${getInputBorderClass(
+                  "email"
+                )}`}
                 placeholder="student@example.com"
                 required
                 disabled={submitting}
               />
             </div>
+            {renderError("email")}
           </div>
 
           <div className="relative group">
@@ -118,12 +221,16 @@ const StudentForm = ({
                 name="phone"
                 value={formData.phone}
                 onChange={onChange}
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 bg-white transition-all duration-200"
+                onBlur={handleBlur}
+                className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 bg-white transition-all duration-200 ${getInputBorderClass(
+                  "phone"
+                )}`}
                 placeholder="+1 234 567 8900"
                 required
                 disabled={submitting}
               />
             </div>
+            {renderError("phone")}
           </div>
         </>
       )}
@@ -150,7 +257,10 @@ const StudentForm = ({
             name="courseId"
             value={formData.courseId}
             onChange={handleCourseChange}
-            className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 bg-white transition-all duration-200 appearance-none"
+            onBlur={handleBlur}
+            className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 bg-white transition-all duration-200 appearance-none ${getInputBorderClass(
+              "courseId"
+            )}`}
             required
             disabled={submitting}
           >
@@ -177,6 +287,7 @@ const StudentForm = ({
             </svg>
           </div>
         </div>
+        {renderError("courseId")}
 
         {selectedCourse && (
           <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -250,7 +361,10 @@ const StudentForm = ({
             name="semester"
             value={formData.semester}
             onChange={onChange}
-            className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 bg-white transition-all duration-200"
+            onBlur={handleBlur}
+            className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 bg-white transition-all duration-200 ${getInputBorderClass(
+              "semester"
+            )}`}
             placeholder="Enter current semester"
             min="1"
             max={selectedCourse?.totalSemesters || 8}
@@ -258,6 +372,7 @@ const StudentForm = ({
             disabled={submitting || !selectedCourse}
           />
         </div>
+        {renderError("semester")}
         {selectedCourse && (
           <p className="text-xs text-gray-500 mt-1">
             Semester range: 1 - {selectedCourse.totalSemesters}
@@ -283,7 +398,10 @@ const StudentForm = ({
             name="totalFees"
             value={formData.totalFees}
             onChange={onChange}
-            className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 bg-white transition-all duration-200"
+            onBlur={handleBlur}
+            className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 bg-white transition-all duration-200 ${getInputBorderClass(
+              "totalFees"
+            )}`}
             placeholder="Total course fees"
             min="0"
             step="0.01"
@@ -292,6 +410,7 @@ const StudentForm = ({
             readOnly={!!selectedCourse}
           />
         </div>
+        {renderError("totalFees")}
         <p className="text-xs text-gray-500 mt-1">
           {selectedCourse
             ? `Auto-filled from course. This will be set as the initial pending fees.`

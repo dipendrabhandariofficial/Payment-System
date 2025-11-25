@@ -26,7 +26,7 @@ const Modal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-800 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={!disabled ? onClose : undefined}
     >
       <div
@@ -43,7 +43,9 @@ const Modal = ({
             )}
             <div>
               <h2 className="text-2xl font-bold">{title}</h2>
-              {subtitle && <p className="text-gray-300 text-sm mt-0.5">{subtitle}</p>}
+              {subtitle && (
+                <p className="text-gray-300 text-sm mt-0.5">{subtitle}</p>
+              )}
             </div>
           </div>
           <button
@@ -56,9 +58,7 @@ const Modal = ({
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1">
-          {children}
-        </div>
+        <div className="p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );
