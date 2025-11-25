@@ -4,6 +4,7 @@ import Modal from "../components/Modal";
 import StudentForm from "../components/StudentForm";
 import StudentViewModal from "../components/StudentViewModal";
 import BulkStudentImport from "../components/BulkStudentImport";
+import SemesterUpgradeModal from "../components/SemesterUpgradeModal";
 import ActionMenu from "../components/ActionMenu";
 import DataTable from "../components/DataTable";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -15,6 +16,7 @@ import {
   addStudent,
   updateStudent,
   deleteStudent,
+  getPayments,
 } from "../services/api";
 import {
   Plus,
@@ -25,6 +27,7 @@ import {
   Trash2,
   FileSpreadsheet,
   X,
+  GraduationCap,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
@@ -42,6 +45,8 @@ const Students = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
+  const [showSemesterUpgradeModal, setShowSemesterUpgradeModal] =
+    useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -84,6 +89,12 @@ const Students = () => {
   } = useQuery({
     queryKey: ["students"], // Unique key for this query
     queryFn: getStudents, // API function to fetch data
+  });
+
+  // ✅ REACT QUERY: Fetch payments for semester upgrade eligibility
+  const { data: payments = [], isLoading: paymentsLoading } = useQuery({
+    queryKey: ["payments"],
+    queryFn: getPayments,
   });
 
   // ✅ REACT QUERY: Get queryClient to invalidate queries after mutations
@@ -220,6 +231,33 @@ const Students = () => {
     onError: (error) => {
       console.error("Error deleting students:", error);
       toast.error("Failed to delete students. Please try again.");
+    },
+  });
+
+  // ✅ REACT QUERY: useMutation for semester upgrade
+  const semesterUpgradeMutation = useMutation({
+    mutationFn: async (studentIds) => {
+      const upgradePromises = studentIds.map(async (studentId) => {
+        const student = students.find((s) => s.id === studentId);
+        if (!student) return;
+
+        const updatedData = {
+          ...student,
+          semester: (parseInt(student.semester) + 1).toString(),
+        };
+
+        return updateStudent(studentId, updatedData);
+      });
+
+      await Promise.all(upgradePromises);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["students"]);
+      toast.success("Students upgraded successfully!");
+    },
+    onError: (error) => {
+      console.error("Error upgrading students:", error);
+      toast.error("Failed to upgrade students. Please try again.");
     },
   });
 
@@ -653,6 +691,11 @@ const Students = () => {
     }
   };
 
+  // Handle semester upgrade
+  const handleSemesterUpgrade = async (selectedStudentIds) => {
+    await semesterUpgradeMutation.mutateAsync(selectedStudentIds);
+  };
+
   const tableColumns = [
     <input
       type="checkbox"
@@ -692,6 +735,13 @@ const Students = () => {
           >
             <Upload className="w-5 h-5" />
             <span className="hidden sm:inline">Bulk Import</span>
+          </button>
+          <button
+            onClick={() => setShowSemesterUpgradeModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors font-medium"
+          >
+            <GraduationCap className="w-5 h-5" />
+            <span className="hidden sm:inline">Semester Upgrade</span>
           </button>
           <button
             onClick={() => setShowModal(true)}
@@ -1031,6 +1081,15 @@ const Students = () => {
         confirmText="Delete"
         cancelText="Cancel"
         type="danger"
+      />
+
+      {/* Semester Upgrade Modal */}
+      <SemesterUpgradeModal
+        isOpen={showSemesterUpgradeModal}
+        onClose={() => setShowSemesterUpgradeModal(false)}
+        students={students}
+        payments={payments}
+        onUpgrade={handleSemesterUpgrade}
       />
     </PageLayout>
   );
