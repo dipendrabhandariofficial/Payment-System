@@ -180,8 +180,8 @@
           "paid": false
         }
       ],
-      "paidFees": 0,
-      "pendingFees": 228000,
+      "paidFees": 38000,
+      "pendingFees": 190000,
       "id": "fc00"
     },
     {
@@ -1210,6 +1210,24 @@
       "course": "Bachelor of Science in Computer Science",
       "semester": "1",
       "receiptNumber": "RCP1763633448903",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
+      "status": "Completed"
+    },
+    {
+      "id": "8fe4",
+      "studentId": "fc00",
+      "studentName": "Shyam",
+      "rollNumber": "123",
+      "amount": 38000,
+      "paymentDate": "2025-11-25",
+      "paymentMethod": "Cash",
+      "courseId": "bsc-physics",
+      "course": "Bachelor of Science in Physics",
+      "semester": "1",
+      "receiptNumber": "RCP1764098539107",
       "transactionId": null,
       "referenceNumber": null,
       "bankName": null,
