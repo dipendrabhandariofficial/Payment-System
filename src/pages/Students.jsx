@@ -12,6 +12,7 @@ import SearchBar from "../components/Search";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../context/ToastContext";
 import { Button } from "@dipendrabhandari/react-ui-library";
+import useBoolean from "../hooks/useBoolean";
 import {
   getStudents,
   addStudent,
@@ -42,18 +43,31 @@ const Students = () => {
   // const [students, setStudents] = useState([]);
   // const [loading, setLoading] = useState(true);
   const [filteredStudents, setFilteredStudents] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showBulkImportModal, setShowBulkImportModal] = useState(false);
-  const [showSemesterUpgradeModal, setShowSemesterUpgradeModal] =
-    useState(false);
+
+  // Boolean states using useBoolean hook for cleaner state management
+  const [showModal, { open: openModal, close: closeModal }] = useBoolean();
+  const [showViewModal, { open: openViewModal, close: closeViewModal }] =
+    useBoolean();
+  const [showEditModal, { open: openEditModal, close: closeEditModal }] =
+    useBoolean();
+  const [
+    showBulkImportModal,
+    { open: openBulkImportModal, close: closeBulkImportModal },
+  ] = useBoolean();
+  const [
+    showSemesterUpgradeModal,
+    { open: openSemesterUpgradeModal, close: closeSemesterUpgradeModal },
+  ] = useBoolean();
+  const [showBulkActionPopup, bulkActionPopupActions] = useBoolean();
+  const [
+    showConfirmDialog,
+    { open: openConfirmDialog, close: closeConfirmDialog },
+  ] = useBoolean();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
-  const [showBulkActionPopup, setShowBulkActionPopup] = useState(false);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const toast = useToast();
   const [formData, setFormData] = useState({
@@ -142,7 +156,7 @@ const Students = () => {
       // Automatically refetch students after successful add
       queryClient.invalidateQueries(["students"]);
       toast.success("Student added successfully!");
-      setShowModal(false);
+      closeModal();
       // Reset form
       setFormData({
         name: "",
@@ -174,7 +188,7 @@ const Students = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(["students"]);
       toast.success("Student updated successfully!");
-      setShowEditModal(false);
+      closeEditModal();
       setSelectedStudent(null);
       setSelectedCourse(null);
       setFormData({
@@ -413,7 +427,7 @@ const Students = () => {
 
   const handleCloseModal = () => {
     if (!submitting) {
-      setShowModal(false);
+      closeModal();
       setFormData({
         name: "",
         rollNumber: "",
@@ -436,7 +450,7 @@ const Students = () => {
 
   const handleView = (student) => {
     setSelectedStudent(student);
-    setShowViewModal(true);
+    openViewModal();
   };
 
   const handleEdit = (student) => {
@@ -474,7 +488,7 @@ const Students = () => {
       totalFees: student.totalFees.toString(),
       semesterFees: student.semesterFees || [],
     });
-    setShowEditModal(true);
+    openEditModal();
   };
 
   const handleDelete = async (student) => {
@@ -532,7 +546,7 @@ const Students = () => {
 
   const handleCloseEditModal = () => {
     if (!submitting) {
-      setShowEditModal(false);
+      closeEditModal();
       setSelectedStudent(null);
       setSelectedCourse(null);
       setFormData({
@@ -585,15 +599,15 @@ const Students = () => {
   // Show bulk action popup when students are selected
   useEffect(() => {
     if (selectedStudents.length > 0) {
-      setShowBulkActionPopup(true);
+      bulkActionPopupActions.on();
     } else {
-      setShowBulkActionPopup(false);
+      bulkActionPopupActions.off();
     }
-  }, [selectedStudents]);
+  }, [selectedStudents, bulkActionPopupActions]);
 
   // Handle bulk delete - show confirmation dialog
   const handleBulkDeleteClick = () => {
-    setShowConfirmDialog(true);
+    openConfirmDialog();
   };
 
   // Handle bulk delete confirmation
@@ -731,21 +745,21 @@ const Students = () => {
       actionButton={
         <div className="flex items-center gap-3">
           <Button
-            onClick={() => setShowBulkImportModal(true)}
+            onClick={openBulkImportModal}
             leftIcon={<Upload className="w-5 h-5" />}
             colorScheme="green"
           >
             <span className="hidden sm:inline">Bulk Import</span>
           </Button>
           <Button
-            onClick={() => setShowSemesterUpgradeModal(true)}
+            onClick={openSemesterUpgradeModal}
             leftIcon={<GraduationCap className="w-5 h-5" />}
             colorScheme="blue"
           >
             <span className="hidden sm:inline">Semester Upgrade</span>
           </Button>
           <Button
-            onClick={() => setShowModal(true)}
+            onClick={openModal}
             leftIcon={<Plus className="w-5 h-5" />}
             colorScheme="gray"
           >
@@ -967,7 +981,7 @@ const Students = () => {
       <StudentViewModal
         student={selectedStudent}
         isOpen={showViewModal}
-        onClose={() => setShowViewModal(false)}
+        onClose={closeViewModal}
       />
 
       <Modal
@@ -1024,7 +1038,7 @@ const Students = () => {
 
       <BulkStudentImport
         isOpen={showBulkImportModal}
-        onClose={() => setShowBulkImportModal(false)}
+        onClose={closeBulkImportModal}
         courses={courses}
         onImport={handleBulkImport}
         generateRollNumber={generateRollNumber}
@@ -1075,7 +1089,7 @@ const Students = () => {
       {/* Confirmation Dialog */}
       <ConfirmDialog
         isOpen={showConfirmDialog}
-        onClose={() => setShowConfirmDialog(false)}
+        onClose={closeConfirmDialog}
         onConfirm={handleBulkDeleteConfirm}
         title="Delete Students"
         message={`Are you sure you want to delete ${selectedStudents.length} student(s)? This action cannot be undone.`}
@@ -1087,7 +1101,7 @@ const Students = () => {
       {/* Semester Upgrade Modal */}
       <SemesterUpgradeModal
         isOpen={showSemesterUpgradeModal}
-        onClose={() => setShowSemesterUpgradeModal(false)}
+        onClose={closeSemesterUpgradeModal}
         students={students}
         payments={payments}
         onUpgrade={handleSemesterUpgrade}
