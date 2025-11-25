@@ -49,15 +49,15 @@ const useInfiniteScroll = ({ items = [], pageSize = 10, rootElement = null }) =>
   const hasMore = displayCount < items.length;
 
   // Debug info (optional - remove in production)
-  useEffect(() => {
-    console.log(`Infinite Scroll Debug:`, {
-      totalItems: items.length,
-      displayCount,
-      hasMore,
-      pageSize,
-      hasRoot: !!rootElement
-    });
-  }, [displayCount, items.length, hasMore, pageSize, rootElement]);
+  // useEffect(() => {
+  //   console.log(`Infinite Scroll Debug:`, {
+  //     totalItems: items.length,
+  //     displayCount,
+  //     hasMore,
+  //     pageSize,
+  //     hasRoot: !!rootElement
+  //   });
+  // }, [displayCount, items.length, hasMore, pageSize, rootElement]);
 
   return {
     loaderRef,

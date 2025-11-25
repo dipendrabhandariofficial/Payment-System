@@ -867,6 +867,62 @@
       "paidFees": 0,
       "pendingFees": 300000,
       "rowNum": 3
+    },
+    {
+      "id": "ef68",
+      "name": "Ramnath",
+      "rollNumber": "BOSIE-20251125-001",
+      "email": "ramnath@gmail.com",
+      "phone": "12345",
+      "address": "",
+      "guardianName": "",
+      "guardianPhone": "",
+      "guardianRelation": "",
+      "admissionDate": "2025-11-25",
+      "courseId": "bsc-economics",
+      "course": "Bachelor of Science in Economics",
+      "semester": "1",
+      "totalFees": 216000,
+      "semesterFees": [
+        {
+          "semester": "1",
+          "amount": 36000,
+          "dueDate": "2025-11-25",
+          "paid": false
+        },
+        {
+          "semester": "2",
+          "amount": 36000,
+          "dueDate": "2026-05-25",
+          "paid": false
+        },
+        {
+          "semester": "3",
+          "amount": 36000,
+          "dueDate": "2026-11-25",
+          "paid": false
+        },
+        {
+          "semester": "4",
+          "amount": 36000,
+          "dueDate": "2027-05-25",
+          "paid": false
+        },
+        {
+          "semester": "5",
+          "amount": 36000,
+          "dueDate": "2027-11-25",
+          "paid": false
+        },
+        {
+          "semester": "6",
+          "amount": 36000,
+          "dueDate": "2028-05-25",
+          "paid": false
+        }
+      ],
+      "paidFees": 0,
+      "pendingFees": 216000
     }
   ],
   "payments": [

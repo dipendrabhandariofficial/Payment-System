@@ -11,6 +11,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import SearchBar from "../components/Search";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../context/ToastContext";
+import { Button } from "@dipendrabhandari/react-ui-library";
 import {
   getStudents,
   addStudent,
@@ -729,27 +730,27 @@ const Students = () => {
       subtitle={"Get the information of the students"}
       actionButton={
         <div className="flex items-center gap-3">
-          <button
+          <Button
             onClick={() => setShowBulkImportModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors font-medium"
+            leftIcon={<Upload className="w-5 h-5" />}
+            colorScheme="green"
           >
-            <Upload className="w-5 h-5" />
             <span className="hidden sm:inline">Bulk Import</span>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowSemesterUpgradeModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors font-medium"
+            leftIcon={<GraduationCap className="w-5 h-5" />}
+            colorScheme="blue"
           >
-            <GraduationCap className="w-5 h-5" />
             <span className="hidden sm:inline">Semester Upgrade</span>
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800 dark:bg-gray-500 text-white rounded-lg cursor-pointer hover:bg-gray-600 transition-colors font-medium"
+            leftIcon={<Plus className="w-5 h-5" />}
+            colorScheme="gray"
           >
-            <Plus className="w-5 h-5" />
             <span className="hidden sm:inline">Add Student</span>
-          </button>
+          </Button>
         </div>
       }
     >

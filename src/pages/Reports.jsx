@@ -204,7 +204,7 @@ const Reports = () => {
           onClick={downloadReport}
           leftIcon={<Download />}
         >
-          Download PDF
+          <span className="hidden sm:inline">Download PDF</span>
         </Button>
       }
     >
@@ -325,68 +325,68 @@ const Reports = () => {
           )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex-1 h-[80vh] border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex-1 border border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
             Financial Summary
           </h2>
           <div className="space-y-4">
-               <QuickStat
-        title="Collection Rate"
-        description="Percentage of total collected vs pending"
-        value={
-          stats.totalCollected > 0
-            ? (
-                (stats.totalCollected /
-                  (stats.totalCollected + stats.totalPending)) *
-                100
-              ).toFixed(2) + "%"
-            : "0%"
-        }
-        valueClassName="text-blue-600"
-      />
+            <QuickStat
+              title="Collection Rate"
+              description="Percentage of total collected vs pending"
+              value={
+                stats.totalCollected > 0
+                  ? (
+                      (stats.totalCollected /
+                        (stats.totalCollected + stats.totalPending)) *
+                      100
+                    ).toFixed(2) + "%"
+                  : "0%"
+              }
+              valueClassName="text-blue-600"
+            />
 
-      <QuickStat
-        title="Pending Rate"
-        description="Percentage of remaining unpaid fees"
-        value={
-          stats.totalPending > 0
-            ? (
-                (stats.totalPending /
-                  (stats.totalCollected + stats.totalPending)) *
-                100
-              ).toFixed(2) + "%"
-            : "0%"
-        }
-        valueClassName="text-red-600"
-      />
+            <QuickStat
+              title="Pending Rate"
+              description="Percentage of remaining unpaid fees"
+              value={
+                stats.totalPending > 0
+                  ? (
+                      (stats.totalPending /
+                        (stats.totalCollected + stats.totalPending)) *
+                      100
+                    ).toFixed(2) + "%"
+                  : "0%"
+              }
+              valueClassName="text-red-600"
+            />
 
-      <QuickStat
-        title="Avg Fee per Student"
-        description="Total fee divided by number of students"
-        value={formatCurrency(
-          stats.totalStudents > 0
-            ? Math.round(
-                (stats.totalCollected + stats.totalPending) /
-                  stats.totalStudents
-              )
-            : 0
-        )}
-        valueClassName="text-green-600"
-      />
+            <QuickStat
+              title="Avg Fee per Student"
+              description="Total fee divided by number of students"
+              value={formatCurrency(
+                stats.totalStudents > 0
+                  ? Math.round(
+                      (stats.totalCollected + stats.totalPending) /
+                        stats.totalStudents
+                    )
+                  : 0
+              )}
+              valueClassName="text-green-600"
+            />
 
-      <QuickStat
-        title="Payment Coverage"
-        description="Students who have made payments"
-        value={
-          stats.totalStudents > 0
-            ? (
-                (stats.studentsWithPayments / stats.totalStudents) *
-                100
-              ).toFixed(1) + "%"
-            : "0%"
-        }
-        valueClassName="text-purple-600"
-      />
+            <QuickStat
+              title="Payment Coverage"
+              description="Students who have made payments"
+              value={
+                stats.totalStudents > 0
+                  ? (
+                      (stats.studentsWithPayments / stats.totalStudents) *
+                      100
+                    ).toFixed(1) + "%"
+                  : "0%"
+              }
+              valueClassName="text-purple-600"
+            />
 
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
@@ -414,7 +414,6 @@ const Reports = () => {
           </div>
         </div>
       </div>
-      
     </PageLayout>
   );
 };
