@@ -938,44 +938,19 @@ const Students = () => {
         icon={User}
         disabled={submitting}
       >
-        <form onSubmit={handleSubmit}>
-          <StudentForm
-            isEditMode={!!selectedStudent}
-            formData={formData}
-            onChange={handleChange}
-            courses={courses}
-            selectedCourse={selectedCourse}
-            setSelectedCourse={setSelectedCourse}
-            submitting={submitting}
-          />
-          <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={handleCloseModal}
-              disabled={submitting}
-              className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-6 py-2.5 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Adding...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-5 h-5" />
-                  Add Student
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+        <StudentForm
+          isEditMode={!!selectedStudent}
+          formData={formData}
+          onChange={handleChange}
+          courses={courses}
+          selectedCourse={selectedCourse}
+          setSelectedCourse={setSelectedCourse}
+          submitting={submitting}
+          onCancel={handleCloseModal}
+          onSubmit={handleSubmit}
+          submitButtonText={submitting ? "Adding" : "Add Student"}
+          submitButtonIcon={Plus}
+        />
       </Modal>
 
       <StudentViewModal
@@ -996,44 +971,19 @@ const Students = () => {
         icon={Edit}
         disabled={submitting}
       >
-        <form onSubmit={handleUpdateSubmit}>
-          <StudentForm
-            formData={formData}
-            onChange={handleChange}
-            courses={courses}
-            selectedCourse={selectedCourse}
-            setSelectedCourse={setSelectedCourse}
-            submitting={submitting}
-            isEditMode={true}
-          />
-          <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={handleCloseEditModal}
-              disabled={submitting}
-              className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-6 py-2.5 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                <>
-                  <Edit className="w-5 h-5" />
-                  Update Student
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+        <StudentForm
+          formData={formData}
+          onChange={handleChange}
+          courses={courses}
+          selectedCourse={selectedCourse}
+          setSelectedCourse={setSelectedCourse}
+          submitting={submitting}
+          isEditMode={true}
+          onCancel={handleCloseEditModal}
+          onSubmit={handleUpdateSubmit}
+          submitButtonText={submitting ? "Updating" : "Update Student"}
+          submitButtonIcon={Edit}
+        />
       </Modal>
 
       <BulkStudentImport
