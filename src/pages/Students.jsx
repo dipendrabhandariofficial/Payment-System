@@ -16,15 +16,23 @@ import {
   updateStudent,
   deleteStudent,
 } from "../services/api";
-import { Plus, User, Edit, Loader2, Upload, Trash2, FileSpreadsheet, X } from "lucide-react";
-import * as XLSX from 'xlsx';
+import {
+  Plus,
+  User,
+  Edit,
+  Loader2,
+  Upload,
+  Trash2,
+  FileSpreadsheet,
+  X,
+} from "lucide-react";
+import * as XLSX from "xlsx";
 import {
   courses as initialCourses,
   generateSemesterFees,
 } from "../data/courses";
 // ✅ REACT QUERY: Import useQuery for fetching data and useMutation for CRUD operations
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
 
 const Students = () => {
   // const [students, setStudents] = useState([]);
@@ -40,7 +48,7 @@ const Students = () => {
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [showBulkActionPopup, setShowBulkActionPopup] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  
+
   const toast = useToast();
   const [formData, setFormData] = useState({
     name: "",
@@ -67,14 +75,20 @@ const Students = () => {
   // ✅ REACT QUERY: Fetch students using useQuery instead of manual useState + useEffect
   // OLD WAY: const [students, setStudents] = useState([]); + useEffect(() => fetchStudents(), []);
   // NEW WAY: useQuery automatically handles loading, error, and caching
-  const { data: students = [], isLoading, error, refetch, isError } = useQuery({
+  const {
+    data: students = [],
+    isLoading,
+    error,
+    refetch,
+    isError,
+  } = useQuery({
     queryKey: ["students"], // Unique key for this query
-    queryFn: getStudents,   // API function to fetch data
+    queryFn: getStudents, // API function to fetch data
   });
 
   // ✅ REACT QUERY: Get queryClient to invalidate queries after mutations
   const queryClient = useQueryClient();
-  
+
   // Get courses from localStorage or use initial courses
   const getCourses = () => {
     const savedCourses = localStorage.getItem("courses");
@@ -190,8 +204,8 @@ const Students = () => {
   // ✅ REACT QUERY: useMutation for bulk delete
   const bulkDeleteMutation = useMutation({
     mutationFn: async (studentIds) => {
-      const deletePromises = studentIds.map(studentId => 
-        deleteStudent(studentId).catch(err => {
+      const deletePromises = studentIds.map((studentId) =>
+        deleteStudent(studentId).catch((err) => {
           console.error(`Failed to delete student ${studentId}:`, err);
           throw err;
         })
@@ -248,7 +262,7 @@ const Students = () => {
       // OLD WAY: await fetchStudents();
       // NEW WAY: queryClient.invalidateQueries() triggers automatic refetch
       queryClient.invalidateQueries(["students"]);
-      
+
       toast.success("Bulk import completed successfully!");
       return true;
     } catch (error) {
@@ -327,7 +341,9 @@ const Students = () => {
     }
 
     if (!formData.rollNumber) {
-      toast.error("Roll number generation failed. Please select a course and admission date.");
+      toast.error(
+        "Roll number generation failed. Please select a course and admission date."
+      );
       setSubmitting(false);
       return;
     }
@@ -346,7 +362,7 @@ const Students = () => {
       // OLD WAY: await addStudent(studentData); await fetchStudents();
       // NEW WAY: addStudentMutation.mutate() - onSuccess handles refetch automatically
       await addStudentMutation.mutateAsync(studentData);
-      
+
       // Note: Form reset and modal close are now handled in mutation's onSuccess
     } catch (error) {
       // Error handling is done in mutation's onError, but we still catch here for setSubmitting
@@ -388,7 +404,9 @@ const Students = () => {
     setSelectedStudent(student);
 
     if (!student.courseId) {
-      toast.warning("This student was added without a course. Please select a course to update.");
+      toast.warning(
+        "This student was added without a course. Please select a course to update."
+      );
     }
 
     const studentCourse = student.courseId
@@ -410,7 +428,7 @@ const Students = () => {
       guardianPhone: student.guardianPhone || "",
       guardianRelation: student.guardianRelation || "",
       admissionDate:
-      student.admissionDate || new Date().toISOString().split("T")[0],
+        student.admissionDate || new Date().toISOString().split("T")[0],
       courseId: student.courseId || "",
       course: student.course || "",
       semester: student.semester || "1",
@@ -460,11 +478,11 @@ const Students = () => {
       // ✅ REACT QUERY: Use mutation instead of manual API call
       // OLD WAY: await updateStudent(id, data); await fetchStudents();
       // NEW WAY: updateStudentMutation.mutate() - onSuccess handles refetch
-      await updateStudentMutation.mutateAsync({ 
-        id: selectedStudent.id, 
-        data: studentData 
+      await updateStudentMutation.mutateAsync({
+        id: selectedStudent.id,
+        data: studentData,
       });
-      
+
       // Note: Form reset and modal close are now handled in mutation's onSuccess
     } catch (error) {
       console.error("Error in handleUpdateSubmit:", error);
@@ -507,9 +525,9 @@ const Students = () => {
 
   // Handle checkbox selection
   const handleSelectStudent = (studentId) => {
-    setSelectedStudents(prev => {
+    setSelectedStudents((prev) => {
       if (prev.includes(studentId)) {
-        return prev.filter(id => id !== studentId);
+        return prev.filter((id) => id !== studentId);
       } else {
         return [...prev, studentId];
       }
@@ -521,7 +539,7 @@ const Students = () => {
     if (selectedStudents.length === filteredStudents.length) {
       setSelectedStudents([]);
     } else {
-      setSelectedStudents(filteredStudents.map(s => s.id));
+      setSelectedStudents(filteredStudents.map((s) => s.id));
     }
   };
 
@@ -543,13 +561,13 @@ const Students = () => {
   const handleBulkDeleteConfirm = async () => {
     try {
       setSubmitting(true);
-      console.log('Deleting students:', selectedStudents);
-      
+      console.log("Deleting students:", selectedStudents);
+
       // ✅ REACT QUERY: Use mutation for bulk delete
       // OLD WAY: Manual Promise.all with deleteStudent() + fetchStudents()
       // NEW WAY: bulkDeleteMutation.mutate() - onSuccess handles refetch and cleanup
       await bulkDeleteMutation.mutateAsync(selectedStudents);
-      
+
       // Note: Selection clear and success message are handled in mutation's onSuccess
     } catch (error) {
       console.error("Error in handleBulkDeleteConfirm:", error);
@@ -561,29 +579,31 @@ const Students = () => {
   // Handle bulk export to Excel
   const handleBulkExport = () => {
     try {
-      const selectedStudentData = students.filter(s => selectedStudents.includes(s.id));
-      
+      const selectedStudentData = students.filter((s) =>
+        selectedStudents.includes(s.id)
+      );
+
       if (selectedStudentData.length === 0) {
         toast.error("No students selected for export");
         return;
       }
-      
+
       // Prepare data for export
-      const exportData = selectedStudentData.map(student => ({
-        'Roll Number': student.rollNumber || '',
-        'Name': student.name || '',
-        'Email': student.email || '',
-        'Phone': student.phone || '',
-        'Course': student.course || '',
-        'Semester': student.semester || '',
-        'Total Fees': student.totalFees || 0,
-        'Paid Fees': student.paidFees || 0,
-        'Pending Fees': student.pendingFees || 0,
-        'Guardian Name': student.guardianName || '',
-        'Guardian Phone': student.guardianPhone || '',
-        'Guardian Relation': student.guardianRelation || '',
-        'Address': student.address || '',
-        'Admission Date': student.admissionDate || ''
+      const exportData = selectedStudentData.map((student) => ({
+        "Roll Number": student.rollNumber || "",
+        Name: student.name || "",
+        Email: student.email || "",
+        Phone: student.phone || "",
+        Course: student.course || "",
+        Semester: student.semester || "",
+        "Total Fees": student.totalFees || 0,
+        "Paid Fees": student.paidFees || 0,
+        "Pending Fees": student.pendingFees || 0,
+        "Guardian Name": student.guardianName || "",
+        "Guardian Phone": student.guardianPhone || "",
+        "Guardian Relation": student.guardianRelation || "",
+        Address: student.address || "",
+        "Admission Date": student.admissionDate || "",
       }));
 
       // Create workbook and worksheet
@@ -605,21 +625,23 @@ const Students = () => {
         { wch: 15 }, // Guardian Phone
         { wch: 15 }, // Guardian Relation
         { wch: 30 }, // Address
-        { wch: 15 }  // Admission Date
+        { wch: 15 }, // Admission Date
       ];
-      ws['!cols'] = columnWidths;
+      ws["!cols"] = columnWidths;
 
       // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'Students');
+      XLSX.utils.book_append_sheet(wb, ws, "Students");
 
       // Generate file name with current date
-      const fileName = `students_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      const fileName = `students_export_${
+        new Date().toISOString().split("T")[0]
+      }.xlsx`;
 
       // Save file with explicit bookType
-      XLSX.writeFile(wb, fileName, { bookType: 'xlsx', type: 'binary' });
+      XLSX.writeFile(wb, fileName, { bookType: "xlsx", type: "binary" });
 
-      console.log('Export successful:', fileName);
-      
+      console.log("Export successful:", fileName);
+
       // Show success message
       toast.success("Export completed successfully!");
 
@@ -634,7 +656,10 @@ const Students = () => {
   const tableColumns = [
     <input
       type="checkbox"
-      checked={selectedStudents.length === filteredStudents.length && filteredStudents.length > 0}
+      checked={
+        selectedStudents.length === filteredStudents.length &&
+        filteredStudents.length > 0
+      }
       onChange={handleSelectAll}
       className="w-4 h-4 cursor-pointer"
     />,
@@ -687,7 +712,6 @@ const Students = () => {
         />
       </div>
 
-
       {/* ✅ REACT QUERY: DataTable uses isLoading from useQuery */}
       <DataTable
         columns={tableColumns}
@@ -707,10 +731,15 @@ const Students = () => {
               }
             }}
             className={`hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
-              selectedStudents.includes(student.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+              selectedStudents.includes(student.id)
+                ? "bg-blue-50 dark:bg-blue-900/20"
+                : ""
             }`}
           >
-            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm" onClick={(e) => e.stopPropagation()}>
+            <td
+              className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
               <input
                 type="checkbox"
                 checked={selectedStudents.includes(student.id)}
@@ -718,29 +747,29 @@ const Students = () => {
                 className="w-4 h-4 cursor-pointer"
               />
             </td>
-            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm font-medium text-gray-900 dark:text-white">
               {student.rollNumber}
             </td>
-            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-white">
+            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900 dark:text-white">
               {student.name}
             </td>
-            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+            <td className="px-2 py-1 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-600 dark:text-gray-300">
               {student.course}
             </td>
-            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+            <td className="px-2 py-1 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-600 dark:text-gray-300">
               {student.semester}
             </td>
-            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-white">
+            <td className="px-2 py-1 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900 dark:text-white">
               {formatCurrency(student.totalFees || 0)}
             </td>
-            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-green-600 dark:text-green-400">
+            <td className="px-2 py-1 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-green-600 dark:text-green-400">
               {formatCurrency(student.paidFees || 0)}
             </td>
-            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-white">
+            <td className="px-2 py-1 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900 dark:text-white">
               {formatCurrency(student.pendingFees || 0)}
             </td>
             <td
-              className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm"
+              className="px-2 py-1 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm"
               onClick={(e) => e.stopPropagation()}
             >
               <ActionMenu
@@ -846,7 +875,7 @@ const Students = () => {
       >
         <form onSubmit={handleSubmit}>
           <StudentForm
-            isEditMode={!!selectedStudent} 
+            isEditMode={!!selectedStudent}
             formData={formData}
             onChange={handleChange}
             courses={courses}
@@ -961,7 +990,7 @@ const Students = () => {
                   {selectedStudents.length} selected
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleBulkDeleteClick}
@@ -971,7 +1000,7 @@ const Students = () => {
                   <Trash2 className="w-4 h-4" />
                   Delete
                 </button>
-                
+
                 <button
                   onClick={handleBulkExport}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
@@ -979,7 +1008,7 @@ const Students = () => {
                   <FileSpreadsheet className="w-4 h-4" />
                   Export
                 </button>
-                
+
                 <button
                   onClick={() => setSelectedStudents([])}
                   className="flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
