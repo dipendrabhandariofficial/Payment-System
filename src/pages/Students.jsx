@@ -88,13 +88,6 @@ const Students = () => {
   });
   const [selectedCourse, setSelectedCourse] = useState();
 
-  // useEffect(() => {
-  //   fetchStudents();
-  // }, []);
-
-  // ✅ REACT QUERY: Fetch students using useQuery instead of manual useState + useEffect
-  // OLD WAY: const [students, setStudents] = useState([]); + useEffect(() => fetchStudents(), []);
-  // NEW WAY: useQuery automatically handles loading, error, and caching
   const {
     data: students = [],
     isLoading,
@@ -106,16 +99,13 @@ const Students = () => {
     queryFn: getStudents, // API function to fetch data
   });
 
-  // ✅ REACT QUERY: Fetch payments for semester upgrade eligibility
   const { data: payments = [], isLoading: paymentsLoading } = useQuery({
     queryKey: ["payments"],
     queryFn: getPayments,
   });
 
-  // ✅ REACT QUERY: Get queryClient to invalidate queries after mutations
   const queryClient = useQueryClient();
 
-  // Get courses from localStorage or use initial courses
   const getCourses = () => {
     const savedCourses = localStorage.getItem("courses");
     return savedCourses ? JSON.parse(savedCourses) : initialCourses;
@@ -133,23 +123,6 @@ const Students = () => {
     setFilteredStudents(filtered);
   }, [searchTerm, students]);
 
-  // ❌ OLD WAY: Manual fetchStudents function - NO LONGER NEEDED with React Query
-  // const fetchStudents = async () => {
-  //   try {
-  //     const data = await getStudents();
-  //     setStudents(data);
-  //     setFilteredStudents(data);
-  //   } catch (error) {
-  //     console.error("Error fetching students:", error);
-  //     toast.error("Failed to fetch students");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // ✅ REACT QUERY: useMutation for adding a student
-  // OLD WAY: Manual try-catch in handleSubmit with await addStudent() + fetchStudents()
-  // NEW WAY: useMutation handles loading state, error handling, and auto-refetch
   const addStudentMutation = useMutation({
     mutationFn: addStudent,
     onSuccess: () => {
@@ -182,7 +155,6 @@ const Students = () => {
     },
   });
 
-  // ✅ REACT QUERY: useMutation for updating a student
   const updateStudentMutation = useMutation({
     mutationFn: ({ id, data }) => updateStudent(id, data),
     onSuccess: () => {
@@ -214,7 +186,6 @@ const Students = () => {
     },
   });
 
-  // ✅ REACT QUERY: useMutation for deleting a student
   const deleteStudentMutation = useMutation({
     mutationFn: deleteStudent,
     onSuccess: () => {
@@ -226,8 +197,6 @@ const Students = () => {
       toast.error("Failed to delete student. Please try again.");
     },
   });
-
-  // ✅ REACT QUERY: useMutation for bulk delete
   const bulkDeleteMutation = useMutation({
     mutationFn: async (studentIds) => {
       const deletePromises = studentIds.map((studentId) =>
@@ -249,7 +218,6 @@ const Students = () => {
     },
   });
 
-  // ✅ REACT QUERY: useMutation for semester upgrade
   const semesterUpgradeMutation = useMutation({
     mutationFn: async (studentIds) => {
       const upgradePromises = studentIds.map(async (studentId) => {
@@ -311,9 +279,6 @@ const Students = () => {
         await addStudent(studentData);
       }
 
-      // ✅ REACT QUERY: Refetch using queryClient instead of manual fetchStudents()
-      // OLD WAY: await fetchStudents();
-      // NEW WAY: queryClient.invalidateQueries() triggers automatic refetch
       queryClient.invalidateQueries(["students"]);
 
       toast.success("Bulk import completed successfully!");
@@ -410,15 +375,8 @@ const Students = () => {
         pendingFees: parseFloat(formData.totalFees),
         semesterFees: formData.semesterFees || [],
       };
-
-      // ✅ REACT QUERY: Use mutation instead of manual API call
-      // OLD WAY: await addStudent(studentData); await fetchStudents();
-      // NEW WAY: addStudentMutation.mutate() - onSuccess handles refetch automatically
       await addStudentMutation.mutateAsync(studentData);
-
-      // Note: Form reset and modal close are now handled in mutation's onSuccess
     } catch (error) {
-      // Error handling is done in mutation's onError, but we still catch here for setSubmitting
       console.error("Error in handleSubmit:", error);
     } finally {
       setSubmitting(false);
@@ -494,9 +452,6 @@ const Students = () => {
   const handleDelete = async (student) => {
     if (window.confirm(`Are you sure you want to delete ${student.name}?`)) {
       try {
-        // ✅ REACT QUERY: Use mutation instead of manual API call
-        // OLD WAY: await deleteStudent(id); fetchStudents();
-        // NEW WAY: deleteStudentMutation.mutate() - onSuccess handles refetch
         await deleteStudentMutation.mutateAsync(student.id);
       } catch (error) {
         // Error is handled in mutation's onError
@@ -528,9 +483,6 @@ const Students = () => {
         semesterFees: formData.semesterFees || [],
       };
 
-      // ✅ REACT QUERY: Use mutation instead of manual API call
-      // OLD WAY: await updateStudent(id, data); await fetchStudents();
-      // NEW WAY: updateStudentMutation.mutate() - onSuccess handles refetch
       await updateStudentMutation.mutateAsync({
         id: selectedStudent.id,
         data: studentData,
@@ -616,9 +568,6 @@ const Students = () => {
       setSubmitting(true);
       console.log("Deleting students:", selectedStudents);
 
-      // ✅ REACT QUERY: Use mutation for bulk delete
-      // OLD WAY: Manual Promise.all with deleteStudent() + fetchStudents()
-      // NEW WAY: bulkDeleteMutation.mutate() - onSuccess handles refetch and cleanup
       await bulkDeleteMutation.mutateAsync(selectedStudents);
 
       // Note: Selection clear and success message are handled in mutation's onSuccess
@@ -731,9 +680,6 @@ const Students = () => {
     "Actions",
   ];
 
-  // ✅ REACT QUERY: Use isLoading from useQuery instead of manual loading state
-  // OLD WAY: if (loading) return <LoadingSpinner />;
-  // NEW WAY: if (isLoading) - automatically managed by React Query
   if (isLoading) {
     return <LoadingSpinner message="Loading students..." />;
   }
