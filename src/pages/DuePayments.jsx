@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { getStudents, getPayments } from "../services/api";
+import { useStudents, usePayments } from "../services/api";
 import {
   AlertCircle,
   Calendar,
@@ -17,30 +17,11 @@ import StatCard from "../components/StatCard";
 import DataTable from "../components/DataTable";
 
 const DuePayments = () => {
-  const [students, setStudents] = useState([]);
-  const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: students = [], isLoading: studentsLoading } = useStudents();
+  const { data: payments = [], isLoading: paymentsLoading } = usePayments();
+  const loading = studentsLoading || paymentsLoading;
   const [filterType, setFilterType] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const [studentsData, paymentsData] = await Promise.all([
-        getStudents(),
-        getPayments(),
-      ]);
-      setStudents(studentsData);
-      setPayments(paymentsData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {

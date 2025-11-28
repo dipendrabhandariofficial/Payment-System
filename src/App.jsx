@@ -12,15 +12,15 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-    <I18nextProvider i18n={i18n}>
-      <AuthProvider>
-        <Router>
-          <Approute />
-        </Router>
-      </AuthProvider>
-    </I18nextProvider>
-    {/* 🔍 React Query DevTools - Shows cache, queries, mutations in real-time */}
-    <ReactQueryDevtools initialIsOpen={false} />
+      <I18nextProvider i18n={i18n}>
+        <AuthProvider>
+          <Router>
+            <Approute />
+          </Router>
+        </AuthProvider>
+      </I18nextProvider>
+      {/*  React Query DevTools - Shows cache, queries, mutations in real-time */}
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

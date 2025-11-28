@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import PageLayout from "../components/PageLayout";
 import StatCard from "../components/StatCard";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { getStudents, getPayments } from "../services/api";
+import { useStudents, usePayments } from "../services/api";
 import { useTranslation } from "react-i18next";
 import { Users, DollarSign, AlertCircle, Calendar, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -21,29 +21,11 @@ import {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState("monthly");
-  const [students, setStudents] = useState([]);
-  const [payments, setPayments] = useState([]);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      const [studentsData, paymentsData] = await Promise.all([
-        getStudents(),
-        getPayments()
-      ]);
-      setStudents(studentsData);
-      setPayments(paymentsData);
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: students = [], isLoading: studentsLoading } = useStudents();
+  const { data: payments = [], isLoading: paymentsLoading } = usePayments();
+  const loading = studentsLoading || paymentsLoading;
 
   // Memoize date range calculation
   const dateRange = useMemo(() => {
@@ -65,8 +47,16 @@ const Dashboard = () => {
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     }
 
-    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-    
+    endDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23,
+      59,
+      59,
+      999
+    );
+
     return { startDate, endDate };
   }, [period]);
 
@@ -101,7 +91,10 @@ const Dashboard = () => {
     const totalCollected = periodPayments.reduce((sum, p) => sum + p.amount, 0);
 
     // Total pending across all students
-    const totalPending = students.reduce((sum, s) => sum + (s.pendingFees || 0), 0);
+    const totalPending = students.reduce(
+      (sum, s) => sum + (s.pendingFees || 0),
+      0
+    );
 
     // Calculate due payments - FIXED LOGIC
     const studentsWithDues = new Set();
@@ -125,12 +118,15 @@ const Dashboard = () => {
                 p.semester === semFee.semester &&
                 p.status === "Completed"
             );
-            const paidAmount = semesterPayments.reduce((sum, p) => sum + p.amount, 0);
+            const paidAmount = semesterPayments.reduce(
+              (sum, p) => sum + p.amount,
+              0
+            );
 
             // If there's remaining amount
             if (paidAmount < semFee.amount) {
               const remainingAmount = semFee.amount - paidAmount;
-              
+
               // Check if overdue
               if (dueDate < today) {
                 hasOverdue = true;
@@ -174,16 +170,34 @@ const Dashboard = () => {
   const chartData = useMemo(() => {
     const now = new Date();
     const monthNames = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
 
     const months = [];
-    
+
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+      const monthEnd = new Date(
+        date.getFullYear(),
+        date.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999
+      );
 
       const totalAmount = payments.reduce((sum, payment) => {
         const paymentDate = new Date(payment.paymentDate);
@@ -340,11 +354,14 @@ const Dashboard = () => {
                       {payment.studentName}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {new Date(payment.paymentDate).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {new Date(payment.paymentDate).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
                     </p>
                   </div>
                   <span className="text-gray-900 dark:text-white font-semibold">

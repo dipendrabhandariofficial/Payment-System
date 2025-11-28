@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useBoolean } from "../hooks/useBoolean";
 import {
   Plus,
   Trash2,
@@ -26,9 +27,11 @@ const Courses = () => {
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showModal, { on: openModal, off: closeModal }] = useBoolean(false);
+  const [showViewModal, { on: openViewModal, off: closeViewModal }] =
+    useBoolean(false);
+  const [showEditModal, { on: openEditModal, off: closeEditModal }] =
+    useBoolean(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState("All");
   const [submitting, setSubmitting] = useState(false);
@@ -154,7 +157,7 @@ const Courses = () => {
 
   const handleView = (course) => {
     setSelectedCourse(course);
-    setShowViewModal(true);
+    openViewModal();
     setOpenMenuId(null);
   };
 
@@ -170,7 +173,8 @@ const Courses = () => {
       description: course.description,
       department: course.department,
     });
-    setShowEditModal(true);
+
+    openEditModal();
     setOpenMenuId(null);
   };
 
@@ -189,7 +193,7 @@ const Courses = () => {
 
   const handleCloseModal = () => {
     if (!submitting) {
-      setShowModal(false);
+      closeModal();
       setFormData({
         name: "",
         degreeType: "Bachelor",
@@ -207,7 +211,7 @@ const Courses = () => {
 
   const handleCloseEditModal = () => {
     if (!submitting) {
-      setShowEditModal(false);
+      closeEditModal();
       setSelectedCourse(null);
       setFormData({
         name: "",
@@ -246,7 +250,7 @@ const Courses = () => {
       subtitle={"Manage degree courses and fee structures"}
       actionButton={
         <button
-          onClick={() => setShowModal(true)}
+          onClick={openModal}
           className="flex items-center gap-2 px-4 py-2 bg-gray-800 dark:bg-gray-500  text-white rounded-lg hover:bg-gray-900 transition-colors font-medium"
         >
           <Plus className="w-5 h-5" />
@@ -320,14 +324,11 @@ const Courses = () => {
                   </span>
                 </div>
                 <div className="relative action-menu">
-
                   <ActionMenu
                     onView={() => handleView(course)}
                     onEdit={() => handleEdit(course)}
                     onDelete={() => handleDelete(course)}
-                    
                   />
-                  
                 </div>
               </div>
 

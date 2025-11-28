@@ -1,44 +1,25 @@
 import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
 import { User, DollarSign, Loader2, Receipt } from "lucide-react";
-import { getPayments } from "../services/api";
+import { usePayments } from "../services/api";
 
 const StudentViewModal = ({ student, isOpen, onClose }) => {
+  const { data: allPayments = [], isLoading: loadingPayments } = usePayments();
   const [payments, setPayments] = useState([]);
-  const [loadingPayments, setLoadingPayments] = useState(false);
 
   useEffect(() => {
-    if (student && isOpen) {
-      fetchPayments();
-    } else {
-      setPayments([]);
-    }
-  }, [student, isOpen]);
-
-  const fetchPayments = async () => {
-    if (!student?.id) return;
-
-    setLoadingPayments(true);
-    try {
-      // Get all payments and filter for this student
-      const allPayments = await getPayments();
+    if (student && isOpen && !loadingPayments) {
       const studentPayments = allPayments.filter(
         (payment) => payment.studentId === student.id
       );
-
-      // Sort by payment date (most recent first)
       const sortedPayments = studentPayments.sort((a, b) => {
         return new Date(b.paymentDate) - new Date(a.paymentDate);
       });
-
       setPayments(sortedPayments);
-    } catch (error) {
-      console.error("Error fetching payments:", error);
+    } else {
       setPayments([]);
-    } finally {
-      setLoadingPayments(false);
     }
-  };
+  }, [student, isOpen, allPayments, loadingPayments]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {

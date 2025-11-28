@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  getStudents,
-  addPayment,
-  updateStudent,
-  getPayments,
-} from "../services/api";
+  useStudents,
+  usePayments,
+  useCreatePayment,
+  useUpdateStudent,
+} from "../services/api/index";
 import {
   CheckCircle,
   AlertCircle,
@@ -24,10 +24,14 @@ import { courses as initialCourses, getCourseById } from "../data/courses";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageLayout from "../components/PageLayout";
 import SearchBar from "../components/Search";
+import { useBoolean } from "../hooks/useBoolean";
 
 const AddPayment = () => {
-  const [students, setStudents] = useState([]);
-  const [payments, setPayments] = useState([]);
+  const { data: students = [], isLoading: studentsLoading } = useStudents();
+  const { data: payments = [], isLoading: paymentsLoading } = usePayments();
+  const createPayment = useCreatePayment();
+  const updateStudentMutation = useUpdateStudent();
+
   const [availableCourses, setAvailableCourses] = useState(initialCourses);
 
   const [filterCourse, setFilterCourse] = useState("");
@@ -52,31 +56,16 @@ const AddPayment = () => {
     remarks: "",
   });
 
-  const [loading, setLoading] = useState(true);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useBoolean(false);
   const [error, setError] = useState("");
   const [showExtra, setShowExtra] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [studentsData, paymentsData] = await Promise.all([
-        getStudents(),
-        getPayments(),
-      ]);
-      setStudents(studentsData);
-      setPayments(paymentsData);
-    } catch (err) {
-      setError("Failed to load data");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loading = studentsLoading || paymentsLoading;
 
   useEffect(() => {
-    fetchData();
     const savedCourses = localStorage.getItem("courses");
     if (savedCourses) setAvailableCourses(JSON.parse(savedCourses));
-  }, [fetchData]);
+  }, []);
 
   // Filtered students
   const filteredStudents = useMemo(() => {
@@ -95,29 +84,28 @@ const AddPayment = () => {
   }, [students, filterCourse, filterSemester, searchQuery]);
 
   useEffect(() => {
-  if (filteredStudents.length === 1) {
-    // auto select the only available student
-    const single = filteredStudents[0];
-    setSelectedStudent(single);
+    if (filteredStudents.length === 1) {
+      // auto select the only available student
+      const single = filteredStudents[0];
+      setSelectedStudent(single);
 
-    const courseObj = getCourseById(single.courseId);
-    setSelectedPaymentCourse(courseObj || null);
+      const courseObj = getCourseById(single.courseId);
+      setSelectedPaymentCourse(courseObj || null);
 
-    const availableSemesters = getAvailableSemesters(single);
-    const semester =
-      availableSemesters.length > 0
-        ? availableSemesters[0].semester.toString()
-        : single.semester || "1";
+      const availableSemesters = getAvailableSemesters(single);
+      const semester =
+        availableSemesters.length > 0
+          ? availableSemesters[0].semester.toString()
+          : single.semester || "1";
 
-    setFormData((prev) => ({
-      ...prev,
-      courseId: single.courseId,
-      course: courseObj ? courseObj.name : single.course,
-      semester,
-    }));
-  }
-}, [filteredStudents]);
-
+      setFormData((prev) => ({
+        ...prev,
+        courseId: single.courseId,
+        course: courseObj ? courseObj.name : single.course,
+        semester,
+      }));
+    }
+  }, [filteredStudents]);
 
   const getAvailableSemesters = (student) => {
     if (!student) return [];
@@ -237,15 +225,15 @@ const AddPayment = () => {
     const availableSemesters = getAvailableSemesters(selectedStudent);
     const selectedSemesterNum = parseInt(formData.semester);
 
-   if (!availableSemesters.length) {
-  setError("All semester fees are already paid!");
+    if (!availableSemesters.length) {
+      setError("All semester fees are already paid!");
 
-  setTimeout(() => {
-    setError(""); // Clear after 3 seconds
-  }, 3000);
+      setTimeout(() => {
+        setError(""); // Clear after 3 seconds
+      }, 3000);
 
-  return;
-}
+      return;
+    }
 
     const payableSemester = availableSemesters.find(
       (s) => s.semester === selectedSemesterNum
@@ -278,9 +266,8 @@ const AddPayment = () => {
         remarks: formData.remarks || null,
         status: "Completed",
       };
-      await addPayment(paymentData);
+      await createPayment.mutateAsync(paymentData);
 
-      // Update student
       const updatedStudent = {
         ...selectedStudent,
         paidFees: (selectedStudent.paidFees || 0) + amount,
@@ -289,13 +276,15 @@ const AddPayment = () => {
           (selectedStudent.pendingFees || selectedStudent.totalFees) - amount
         ),
       };
-      await updateStudent(selectedStudent.id, updatedStudent);
+      await updateStudentMutation.mutateAsync({
+        id: selectedStudent.id,
+        data: updatedStudent,
+      });
 
       setSuccess(true);
       resetPaymentForm();
       setSelectedStudent(null);
       setSelectedPaymentCourse(null);
-      await fetchData();
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError("Failed to process payment");
@@ -370,32 +359,32 @@ const AddPayment = () => {
             className="w-full "
           />
 
-         <div className="md:col-span-3">
-  {filteredStudents.length === 0 && (
-    <div className="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-3">
-      <p className="text-sm text-red-700 dark:text-red-300 font-medium flex items-center gap-2">
-        <AlertCircle className="w-4 h-4" />
-        No students match the selected filters.
-      </p>
-    </div>
-  )}
+          <div className="md:col-span-3">
+            {filteredStudents.length === 0 && (
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-lg p-3">
+                <p className="text-sm text-red-700 dark:text-red-300 font-medium flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  No students match the selected filters.
+                </p>
+              </div>
+            )}
 
-  {filteredStudents.length > 0 && (
-    <Select
-      label="Select Student"
-      value={selectedStudent?.id || ""}
-      onChange={handleStudentChange}
-      placeholder="Choose a student"
-      options={filteredStudents.map((student) => ({
-        value: student.id,
-        label: `${student.name} (${student.rollNumber}) — Pending: ${formatCurrency(
-          student.pendingFees
-        )}`,
-      }))}
-      className="transition-all duration-200"
-    />
-  )}
-</div>
+            {filteredStudents.length > 0 && (
+              <Select
+                label="Select Student"
+                value={selectedStudent?.id || ""}
+                onChange={handleStudentChange}
+                placeholder="Choose a student"
+                options={filteredStudents.map((student) => ({
+                  value: student.id,
+                  label: `${student.name} (${
+                    student.rollNumber
+                  }) — Pending: ${formatCurrency(student.pendingFees)}`,
+                }))}
+                className="transition-all duration-200"
+              />
+            )}
+          </div>
         </div>
 
         {/* PAYMENT FORM */}

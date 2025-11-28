@@ -10,15 +10,17 @@ import DataTable from "../components/DataTable";
 import LoadingSpinner from "../components/LoadingSpinner";
 import SearchBar from "../components/Search";
 import ConfirmDialog from "../components/ConfirmDialog";
-import { useToast } from "../context/ToastContext";
 import { Button } from "@dipendrabhandari/react-ui-library";
 import useBoolean from "../hooks/useBoolean";
 import {
-  getStudents,
-  addStudent,
-  updateStudent,
-  deleteStudent,
-  getPayments,
+  useStudents,
+  useCreateStudent,
+  useUpdateStudent,
+  useDeleteStudent,
+  useBulkDeleteStudents,
+  useSemesterUpgrade,
+  useBulkImportStudents,
+  usePayments,
 } from "../services/api";
 import {
   Plus,
@@ -36,8 +38,6 @@ import {
   courses as initialCourses,
   generateSemesterFees,
 } from "../data/courses";
-// ✅ REACT QUERY: Import useQuery for fetching data and useMutation for CRUD operations
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Students = () => {
   // const [students, setStudents] = useState([]);
@@ -69,7 +69,6 @@ const Students = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
 
-  const toast = useToast();
   const [formData, setFormData] = useState({
     name: "",
     rollNumber: "",
@@ -88,23 +87,15 @@ const Students = () => {
   });
   const [selectedCourse, setSelectedCourse] = useState();
 
-  const {
-    data: students = [],
-    isLoading,
-    error,
-    refetch,
-    isError,
-  } = useQuery({
-    queryKey: ["students"], // Unique key for this query
-    queryFn: getStudents, // API function to fetch data
-  });
+  const { data: students = [], isLoading } = useStudents();
+  const { data: payments = [], isLoading: paymentsLoading } = usePayments();
 
-  const { data: payments = [], isLoading: paymentsLoading } = useQuery({
-    queryKey: ["payments"],
-    queryFn: getPayments,
-  });
-
-  const queryClient = useQueryClient();
+  const createStudent = useCreateStudent();
+  const updateStudentMutation = useUpdateStudent();
+  const deleteStudentMutation = useDeleteStudent();
+  const bulkDelete = useBulkDeleteStudents();
+  const semesterUpgradeMutation = useSemesterUpgrade();
+  const bulkImport = useBulkImportStudents();
 
   const getCourses = () => {
     const savedCourses = localStorage.getItem("courses");
@@ -122,127 +113,6 @@ const Students = () => {
     );
     setFilteredStudents(filtered);
   }, [searchTerm, students]);
-
-  const addStudentMutation = useMutation({
-    mutationFn: addStudent,
-    onSuccess: () => {
-      // Automatically refetch students after successful add
-      queryClient.invalidateQueries(["students"]);
-      toast.success("Student added successfully!");
-      closeModal();
-      // Reset form
-      setFormData({
-        name: "",
-        rollNumber: "",
-        email: "",
-        phone: "",
-        address: "",
-        guardianName: "",
-        guardianPhone: "",
-        guardianRelation: "",
-        admissionDate: new Date().toISOString().split("T")[0],
-        courseId: "",
-        course: "",
-        semester: "1",
-        totalFees: "",
-        semesterFees: [],
-      });
-      setSelectedCourse(null);
-    },
-    onError: (error) => {
-      console.error("Error adding student:", error);
-      toast.error("Failed to add student. Please try again.");
-    },
-  });
-
-  const updateStudentMutation = useMutation({
-    mutationFn: ({ id, data }) => updateStudent(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["students"]);
-      toast.success("Student updated successfully!");
-      closeEditModal();
-      setSelectedStudent(null);
-      setSelectedCourse(null);
-      setFormData({
-        name: "",
-        rollNumber: "",
-        email: "",
-        phone: "",
-        address: "",
-        guardianName: "",
-        guardianPhone: "",
-        guardianRelation: "",
-        admissionDate: new Date().toISOString().split("T")[0],
-        courseId: "",
-        course: "",
-        semester: "1",
-        totalFees: "",
-        semesterFees: [],
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating student:", error);
-      toast.error("Failed to update student. Please try again.");
-    },
-  });
-
-  const deleteStudentMutation = useMutation({
-    mutationFn: deleteStudent,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["students"]);
-      toast.success("Student deleted successfully");
-    },
-    onError: (error) => {
-      console.error("Error deleting student:", error);
-      toast.error("Failed to delete student. Please try again.");
-    },
-  });
-  const bulkDeleteMutation = useMutation({
-    mutationFn: async (studentIds) => {
-      const deletePromises = studentIds.map((studentId) =>
-        deleteStudent(studentId).catch((err) => {
-          console.error(`Failed to delete student ${studentId}:`, err);
-          throw err;
-        })
-      );
-      await Promise.all(deletePromises);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(["students"]);
-      setSelectedStudents([]);
-      toast.success("Students deleted successfully!");
-    },
-    onError: (error) => {
-      console.error("Error deleting students:", error);
-      toast.error("Failed to delete students. Please try again.");
-    },
-  });
-
-  const semesterUpgradeMutation = useMutation({
-    mutationFn: async (studentIds) => {
-      const upgradePromises = studentIds.map(async (studentId) => {
-        const student = students.find((s) => s.id === studentId);
-        if (!student) return;
-
-        const updatedData = {
-          ...student,
-          semester: (parseInt(student.semester) + 1).toString(),
-        };
-
-        return updateStudent(studentId, updatedData);
-      });
-
-      await Promise.all(upgradePromises);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(["students"]);
-      toast.success("Students upgraded successfully!");
-    },
-    onError: (error) => {
-      console.error("Error upgrading students:", error);
-      toast.error("Failed to upgrade students. Please try again.");
-    },
-  });
 
   // Generate unique roll number
   const generateRollNumber = (courseName, admissionDate) => {
@@ -274,18 +144,9 @@ const Students = () => {
 
   const handleBulkImport = async (studentsData) => {
     try {
-      // Import all students one by one
-      for (const studentData of studentsData) {
-        await addStudent(studentData);
-      }
-
-      queryClient.invalidateQueries(["students"]);
-
-      toast.success("Bulk import completed successfully!");
+      await bulkImport.mutateAsync(studentsData);
       return true;
     } catch (error) {
-      console.error("Error importing students:", error);
-      toast.error("Failed to import students");
       throw error;
     }
   };
@@ -375,7 +236,25 @@ const Students = () => {
         pendingFees: parseFloat(formData.totalFees),
         semesterFees: formData.semesterFees || [],
       };
-      await addStudentMutation.mutateAsync(studentData);
+      await createStudent.mutateAsync(studentData);
+      closeModal();
+      setFormData({
+        name: "",
+        rollNumber: "",
+        email: "",
+        phone: "",
+        address: "",
+        guardianName: "",
+        guardianPhone: "",
+        guardianRelation: "",
+        admissionDate: new Date().toISOString().split("T")[0],
+        courseId: "",
+        course: "",
+        semester: "1",
+        totalFees: "",
+        semesterFees: [],
+      });
+      setSelectedCourse(null);
     } catch (error) {
       console.error("Error in handleSubmit:", error);
     } finally {
@@ -454,7 +333,6 @@ const Students = () => {
       try {
         await deleteStudentMutation.mutateAsync(student.id);
       } catch (error) {
-        // Error is handled in mutation's onError
         console.error("Error in handleDelete:", error);
       }
     }
@@ -487,8 +365,25 @@ const Students = () => {
         id: selectedStudent.id,
         data: studentData,
       });
-
-      // Note: Form reset and modal close are now handled in mutation's onSuccess
+      closeEditModal();
+      setSelectedStudent(null);
+      setSelectedCourse(null);
+      setFormData({
+        name: "",
+        rollNumber: "",
+        email: "",
+        phone: "",
+        address: "",
+        guardianName: "",
+        guardianPhone: "",
+        guardianRelation: "",
+        admissionDate: new Date().toISOString().split("T")[0],
+        courseId: "",
+        course: "",
+        semester: "1",
+        totalFees: "",
+        semesterFees: [],
+      });
     } catch (error) {
       console.error("Error in handleUpdateSubmit:", error);
     } finally {
@@ -568,9 +463,8 @@ const Students = () => {
       setSubmitting(true);
       console.log("Deleting students:", selectedStudents);
 
-      await bulkDeleteMutation.mutateAsync(selectedStudents);
-
-      // Note: Selection clear and success message are handled in mutation's onSuccess
+      await bulkDelete.mutateAsync(selectedStudents);
+      setSelectedStudents([]);
     } catch (error) {
       console.error("Error in handleBulkDeleteConfirm:", error);
     } finally {
@@ -657,7 +551,10 @@ const Students = () => {
 
   // Handle semester upgrade
   const handleSemesterUpgrade = async (selectedStudentIds) => {
-    await semesterUpgradeMutation.mutateAsync(selectedStudentIds);
+    await semesterUpgradeMutation.mutateAsync({
+      studentIds: selectedStudentIds,
+      students,
+    });
   };
 
   const tableColumns = [
@@ -824,7 +721,7 @@ const Students = () => {
                     onView={() => handleView(student)}
                     onEdit={() => handleEdit(student)}
                     onDelete={() => handleDelete(student)}
-                    className="right-3 botton-0"
+                    className="right-3 bottom-0"
                   />
                 </div>
               </div>

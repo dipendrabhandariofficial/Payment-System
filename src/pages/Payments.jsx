@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getPayments } from "../services/api";
+import { usePayments } from "../services/api";
+import { useBoolean } from "../hooks/useBoolean";
 import {
   Filter,
   Calendar,
@@ -16,24 +17,20 @@ import ReceiptModal from "../components/ReceiptModal";
 import DataTable from "../components/DataTable";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageLayout from "../components/PageLayout";
-import { useToast } from "../context/ToastContext";
 
 const Payments = () => {
-  const [payments, setPayments] = useState([]);
   const [filteredPayments, setFilteredPayments] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterMethod, setFilterMethod] = useState("All");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [sortOrder, setSortOrder] = useState("latest"); // "latest" or "oldest"
+  const [sortOrder, setSortOrder] = useState("latest");
   const [selectedPayment, setSelectedPayment] = useState(null);
-  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
-  const toast = useToast();
 
-  useEffect(() => {
-    fetchPayments();
-  }, []);
+  const [isReceiptModalOpen, { on: openReceiptModal, off: closeReceiptModal }] =
+    useBoolean(false);
+
+  const { data: payments = [], isLoading } = usePayments();
 
   useEffect(() => {
     let filtered = [...payments];
@@ -75,20 +72,7 @@ const Payments = () => {
     setFilteredPayments(filtered);
   }, [searchTerm, filterMethod, fromDate, toDate, sortOrder, payments]);
 
-  const fetchPayments = async () => {
-    try {
-      const data = await getPayments();
-      setPayments(data);
-      setFilteredPayments(data);
-    } catch (error) {
-      console.error("Error fetching payments:", error);
-      toast.error("Failed to fetch payments");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const paginatedItems = filteredPayments; // For simplicity, not implementing pagination here
+  const paginatedItems = filteredPayments;
   const tableColumns = [
     "Student",
     "Amount",
@@ -98,7 +82,7 @@ const Payments = () => {
     "Status",
     "Actions",
   ];
-  
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -121,8 +105,7 @@ const Payments = () => {
     0
   );
 
-
-  if (loading) {
+  if (isLoading) {
     return <LoadingSpinner message="Getting Payment data" />;
   }
 
@@ -136,8 +119,12 @@ const Payments = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Payments</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{filteredPayments.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Total Payments
+              </p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {filteredPayments.length}
+              </p>
             </div>
             <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
               <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -148,8 +135,12 @@ const Payments = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Amount</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(totalAmount)}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Total Amount
+              </p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {formatCurrency(totalAmount)}
+              </p>
             </div>
             <div className="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -278,7 +269,7 @@ const Payments = () => {
       <DataTable
         columns={tableColumns}
         data={paginatedItems}
-        loading={loading}
+        loading={isLoading}
         emptyMessage="No payments found"
         emptyIcon={FileText}
         className="overflow-auto"
@@ -339,7 +330,7 @@ const Payments = () => {
               <button
                 onClick={() => {
                   setSelectedPayment(payment);
-                  setIsReceiptModalOpen(true);
+                  openReceiptModal();
                 }}
                 className="px-3 py-1.5 bg-gray-800 dark:bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-900 dark:hover:bg-gray-600 transition-colors duration-200 flex items-center gap-1.5 text-[11px]"
               >
@@ -427,7 +418,7 @@ const Payments = () => {
               <button
                 onClick={() => {
                   setSelectedPayment(payment);
-                  setIsReceiptModalOpen(true);
+                  openReceiptModal();
                 }}
                 className="w-full mt-4 px-4 py-3 bg-gray-800 dark:bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-900 dark:hover:bg-gray-600 transition-colors duration-200 flex items-center justify-center gap-2"
               >
@@ -444,7 +435,7 @@ const Payments = () => {
         payment={selectedPayment}
         isOpen={isReceiptModalOpen}
         onClose={() => {
-          setIsReceiptModalOpen(false);
+          closeReceiptModal();
           setSelectedPayment(null);
         }}
       />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getStudents, getPayments } from "../services/api";
+import { useStudents, usePayments } from "../services/api";
 import {
   Download,
   Users,
@@ -17,7 +17,7 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
-import { Button } from "../components/button/Button";
+import { Button } from "@dipendrabhandari/react-ui-library";
 import Loader from "../components/Loader";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PageLayout from "../components/PageLayout";
@@ -32,17 +32,18 @@ const Reports = () => {
     totalPending: 0,
     paymentsByMethod: [],
   });
-  const [loading, setLoading] = useState(true);
+  const { data: students = [], isLoading: studentsLoading } = useStudents();
+  const { data: payments = [], isLoading: paymentsLoading } = usePayments();
+  const loading = studentsLoading || paymentsLoading;
 
   useEffect(() => {
-    fetchReportData();
-  }, []);
+    if (!loading) {
+      calculateStats();
+    }
+  }, [students, payments, loading]);
 
-  const fetchReportData = async () => {
+  const calculateStats = () => {
     try {
-      const students = await getStudents();
-      const payments = await getPayments();
-
       const totalCollected = payments.reduce((sum, p) => sum + p.amount, 0);
       const totalPending = students.reduce(
         (sum, s) => sum + (s.pendingFees || 0),
@@ -74,9 +75,7 @@ const Reports = () => {
         paymentsByMethod,
       });
     } catch (error) {
-      console.error("Error fetching report data:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error calculating report data:", error);
     }
   };
 
