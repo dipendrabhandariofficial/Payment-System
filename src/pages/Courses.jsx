@@ -16,12 +16,12 @@ import {
   Clock,
   Users,
 } from "lucide-react";
-import SearchBar from "../components/Search";
-import Select from "../components/Select";
+import SearchBar from "../components/molecules/Search";
+import Select from "../components/atoms/Select";
 import { courses as initialCourses } from "../data/courses";
-import LoadingSpinner from "../components/LoadingSpinner";
-import PageLayout from "../components/PageLayout";
-import ActionMenu from "../components/ActionMenu";
+import LoadingSpinner from "../components/atoms/LoadingSpinner";
+import PageLayout from "../components/templates/PageLayout";
+import ActionMenu from "../components/molecules/ActionMenu";
 
 const Courses = () => {
   const [courses, setCourses] = useState([]);

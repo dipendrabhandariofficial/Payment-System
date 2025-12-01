@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
-import PageLayout from "../components/PageLayout";
-import StatCard from "../components/StatCard";
-import LoadingSpinner from "../components/LoadingSpinner";
+import PageLayout from "../components/templates/PageLayout";
+import StatCard from "../components/molecules/StatCard";
+import LoadingSpinner from "../components/atoms/LoadingSpinner";
 import { useStudents, usePayments } from "../services/api";
 import { useTranslation } from "react-i18next";
 import { Users, DollarSign, AlertCircle, Calendar, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Select from "../components/Select";
+import Select from "../components/atoms/Select";
 import {
   BarChart,
   Bar,

@@ -27,19 +27,25 @@ export const AuthProvider = ({ children }) => {
     // Delay needed to prevent layout flicker
     const timeout = setTimeout(() => {
       setLoading(false);
-    }, 100);
+    }, 200);
 
     return () => clearTimeout(timeout);
   }, []);
 
-  const loginUser = (userData) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+  const loginUser = (authData) => {
+    // Expecting { user, token } from login response
+    const { user, token } = authData;
+    setUser(user);
+    localStorage.setItem("user", JSON.stringify(user));
+    if (token) {
+      localStorage.setItem("authToken", token);
+    }
   };
 
   const logoutUser = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
   };
 
   return (

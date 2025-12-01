@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import { useLogin } from "../services/api";
 import { Mail, Lock, AlertCircle } from "lucide-react";
 import { Button } from "@dipendrabhandari/react-ui-library";
+import { Eye, EyeOff } from "lucide-react";
+import useBoolean from "../hooks/useBoolean";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -12,19 +14,24 @@ const Login = () => {
   const loginMutation = useLogin();
   const navigate = useNavigate();
   const { loginUser } = useAuth();
+  const [showPassword, { toggle: toggleShowPassword }] = useBoolean(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const user = await loginMutation.mutateAsync({ email, password });
-      if (user) {
-        loginUser(user);
+      // console.log(" [Login] Attempting login for:", email);
+      const authData = await loginMutation.mutateAsync({ email, password });
+
+      if (authData) {
+        console.log(" [Login] Success! Received Data:", authData);
+        loginUser(authData);
         navigate("/dashboard");
       }
     } catch (err) {
-      setError("Invalid email or password");
+      console.error(" [Login] Failed:", err);
+      setTimeout(() => setError("Invalid email or password"), 2000);
     }
   };
 
@@ -67,16 +74,31 @@ const Login = () => {
             <label className="block text-gray-700 font-medium mb-2">
               Password
             </label>
+
             <div className="relative">
               <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
                 required
               />
+
+              {/* Eye button */}
+              <button
+                type="button"
+                onClick={() => toggleShowPassword()}
+                className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
             </div>
           </div>
 

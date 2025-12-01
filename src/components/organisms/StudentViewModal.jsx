@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import Modal from "./Modal";
+import Modal from "../molecules/Modal";
 import { User, DollarSign, Loader2, Receipt } from "lucide-react";
-import { usePayments } from "../services/api";
+import { usePayments } from "../../services/api";
 
 const StudentViewModal = ({ student, isOpen, onClose }) => {
   const { data: allPayments = [], isLoading: loadingPayments } = usePayments();

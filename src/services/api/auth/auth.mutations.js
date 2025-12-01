@@ -7,6 +7,10 @@ export const useLogin = () => {
 
     return useMutation({
         mutationFn: ({ email, password }) => authApi.login(email, password),
+        onSuccess: (data) => {
+            console.log('Login success:', data);
+            toast.success('Login successful!');
+        },
         onError: (error) => {
             console.error('Login error:', error);
             toast.error('Login failed. Please check your credentials.');

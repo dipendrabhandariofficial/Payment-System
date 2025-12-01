@@ -1,13 +1,8 @@
 import React, { useRef } from "react";
 import { toJpeg } from "html-to-image";
 import jsPDF from "jspdf";
-import {
-  X,
-  Download,
-  Printer,
-  School
-} from "lucide-react";
-import { useToast } from "../context/ToastContext";
+import { X, Download, Printer, School } from "lucide-react";
+import { useToast } from "../../context/ToastContext";
 
 const ReceiptModal = ({ payment, isOpen, onClose }) => {
   const toast = useToast();
@@ -36,28 +31,31 @@ const ReceiptModal = ({ payment, isOpen, onClose }) => {
   const handleDownloadPDF = async () => {
     try {
       const element = receiptRef.current;
-      
+
       // Use html-to-image which supports modern CSS (like oklch from Tailwind v4)
       const imgData = await toJpeg(element, {
         quality: 0.75,
         backgroundColor: "#ffffff",
-        pixelRatio: 2 // Higher resolution
+        pixelRatio: 2, // Higher resolution
       });
 
       const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      
+
       // Calculate height based on element aspect ratio
       const elementWidth = element.offsetWidth;
       const elementHeight = element.offsetHeight;
       const pdfHeight = (elementHeight * pdfWidth) / elementWidth;
 
       pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
-      
+
       // Sanitize filename to remove invalid characters
-      const safeReceiptNumber = (payment.receiptNumber || "unknown").replace(/[^a-z0-9]/gi, '_');
+      const safeReceiptNumber = (payment.receiptNumber || "unknown").replace(
+        /[^a-z0-9]/gi,
+        "_"
+      );
       pdf.save(`Receipt_${safeReceiptNumber}.pdf`);
-      
+
       toast.success("Receipt downloaded successfully!");
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -95,7 +93,9 @@ const ReceiptModal = ({ payment, isOpen, onClose }) => {
         >
           {/* Modal Header (No Print) */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100 no-print">
-            <h2 className="text-lg font-semibold text-gray-800">Receipt Preview</h2>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Receipt Preview
+            </h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-700"
@@ -110,7 +110,7 @@ const ReceiptModal = ({ payment, isOpen, onClose }) => {
               id="receipt-content"
               ref={receiptRef}
               className="bg-white p-8 md:p-12 shadow-lg mx-auto max-w-[210mm] min-h-[297mm] relative text-gray-800"
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
             >
               {/* Receipt Header */}
               <div className="flex justify-between items-start mb-12">
@@ -119,33 +119,55 @@ const ReceiptModal = ({ payment, isOpen, onClose }) => {
                     <School className="w-10 h-10" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Nepal Commerce Campus</h1>
-                    <p className="text-sm text-gray-500">MinBhawan , Baneshwor Kathmandy</p>
-                    <p className="text-sm text-gray-500">contact@institute.edu | +91 98765 43210</p>
+                    <h1 className="text-2xl font-bold text-gray-900">
+                      Nepal Commerce Campus
+                    </h1>
+                    <p className="text-sm text-gray-500">
+                      MinBhawan , Baneshwor Kathmandy
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      contact@institute.edu | +91 98765 43210
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <h2 className="text-4xl font-bold text-gray-200 tracking-widest uppercase">Receipt</h2>
-                  <p className="text-blue-600 font-medium mt-2">#{payment.receiptNumber}</p>
+                  <h2 className="text-4xl font-bold text-gray-200 tracking-widest uppercase">
+                    Receipt
+                  </h2>
+                  <p className="text-blue-600 font-medium mt-2">
+                    #{payment.receiptNumber}
+                  </p>
                 </div>
               </div>
 
               {/* Bill To & Details */}
               <div className="flex justify-between mb-12">
                 <div>
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Bill To</h3>
-                  <p className="text-lg font-bold text-gray-900">{payment.studentName}</p>
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    Bill To
+                  </h3>
+                  <p className="text-lg font-bold text-gray-900">
+                    {payment.studentName}
+                  </p>
                   <p className="text-gray-600">Roll No: {payment.rollNumber}</p>
                   <p className="text-gray-600">Semester: {payment.semester}</p>
                 </div>
                 <div className="text-right">
                   <div className="mb-2">
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Date</span>
-                    <span className="font-medium">{formatDate(payment.paymentDate)}</span>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                      Date
+                    </span>
+                    <span className="font-medium">
+                      {formatDate(payment.paymentDate)}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Payment Method</span>
-                    <span className="font-medium capitalize">{payment.paymentMethod}</span>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
+                      Payment Method
+                    </span>
+                    <span className="font-medium capitalize">
+                      {payment.paymentMethod}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -155,16 +177,29 @@ const ReceiptModal = ({ payment, isOpen, onClose }) => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b-2 border-gray-900">
-                      <th className="text-left py-3 text-sm font-bold text-gray-900 uppercase tracking-wider">Description</th>
-                      <th className="text-right py-3 text-sm font-bold text-gray-900 uppercase tracking-wider">Amount</th>
+                      <th className="text-left py-3 text-sm font-bold text-gray-900 uppercase tracking-wider">
+                        Description
+                      </th>
+                      <th className="text-right py-3 text-sm font-bold text-gray-900 uppercase tracking-wider">
+                        Amount
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b border-gray-200">
                       <td className="py-4 text-gray-700">
-                        <p className="font-medium text-gray-900">Semester Fee Payment</p>
-                        <p className="text-sm text-gray-500">Tuition and other academic fees for Semester {payment.semester}</p>
-                        {payment.remarks && <p className="text-sm text-gray-500 mt-1 italic">Note: {payment.remarks}</p>}
+                        <p className="font-medium text-gray-900">
+                          Semester Fee Payment
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Tuition and other academic fees for Semester{" "}
+                          {payment.semester}
+                        </p>
+                        {payment.remarks && (
+                          <p className="text-sm text-gray-500 mt-1 italic">
+                            Note: {payment.remarks}
+                          </p>
+                        )}
                       </td>
                       <td className="py-4 text-right font-medium text-gray-900">
                         {formatCurrency(payment.amount)}
@@ -179,22 +214,36 @@ const ReceiptModal = ({ payment, isOpen, onClose }) => {
                 <div className="w-64">
                   <div className="flex justify-between py-2 border-b border-gray-200">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium text-gray-900">{formatCurrency(payment.amount)}</span>
+                    <span className="font-medium text-gray-900">
+                      {formatCurrency(payment.amount)}
+                    </span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-gray-200">
                     <span className="text-gray-600">Tax (0%)</span>
-                    <span className="font-medium text-gray-900">{formatCurrency(0)}</span>
+                    <span className="font-medium text-gray-900">
+                      {formatCurrency(0)}
+                    </span>
                   </div>
                   <div className="flex justify-between py-4">
-                    <span className="text-lg font-bold text-gray-900">Total</span>
-                    <span className="text-lg font-bold text-blue-600">{formatCurrency(payment.amount)}</span>
+                    <span className="text-lg font-bold text-gray-900">
+                      Total
+                    </span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {formatCurrency(payment.amount)}
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Status Badge */}
               <div className="absolute top-[35%] right-12 transform rotate-[-15deg] opacity-20 pointer-events-none">
-                <div className={`border-4 ${payment.status === 'Completed' ? 'border-green-600 text-green-600' : 'border-red-600 text-red-600'} px-8 py-2 rounded-xl text-6xl font-black uppercase tracking-widest`}>
+                <div
+                  className={`border-4 ${
+                    payment.status === "Completed"
+                      ? "border-green-600 text-green-600"
+                      : "border-red-600 text-red-600"
+                  } px-8 py-2 rounded-xl text-6xl font-black uppercase tracking-widest`}
+                >
                   {payment.status}
                 </div>
               </div>
@@ -203,15 +252,20 @@ const ReceiptModal = ({ payment, isOpen, onClose }) => {
               <div className="mt-auto pt-8 border-t border-gray-200">
                 <div className="flex justify-between items-end">
                   <div>
-                    <p className="text-sm text-gray-500 mb-1">Terms & Conditions:</p>
+                    <p className="text-sm text-gray-500 mb-1">
+                      Terms & Conditions:
+                    </p>
                     <p className="text-xs text-gray-400 max-w-xs">
-                      This receipt is electronically generated and valid without signature. 
-                      Fees once paid are non-refundable unless specified otherwise.
+                      This receipt is electronically generated and valid without
+                      signature. Fees once paid are non-refundable unless
+                      specified otherwise.
                     </p>
                   </div>
                   <div className="text-center">
                     <div className="h-16 border-b border-gray-400 w-48 mb-2"></div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">Authorized Signature</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider">
+                      Authorized Signature
+                    </p>
                   </div>
                 </div>
                 <div className="text-center mt-12 text-xs text-gray-400">

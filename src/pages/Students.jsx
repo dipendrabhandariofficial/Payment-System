@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import PageLayout from "../components/PageLayout";
-import Modal from "../components/Modal";
-import StudentForm from "../components/StudentForm";
-import StudentViewModal from "../components/StudentViewModal";
-import BulkStudentImport from "../components/BulkStudentImport";
-import SemesterUpgradeModal from "../components/SemesterUpgradeModal";
-import ActionMenu from "../components/ActionMenu";
-import DataTable from "../components/DataTable";
-import LoadingSpinner from "../components/LoadingSpinner";
-import SearchBar from "../components/Search";
-import ConfirmDialog from "../components/ConfirmDialog";
+import PageLayout from "../components/templates/PageLayout";
+import Modal from "../components/molecules/Modal";
+import StudentForm from "../components/organisms/StudentForm";
+import StudentViewModal from "../components/organisms/StudentViewModal";
+import BulkStudentImport from "../components/organisms/BulkStudentImport";
+import SemesterUpgradeModal from "../components/organisms/SemesterUpgradeModal";
+import ActionMenu from "../components/molecules/ActionMenu";
+import DataTable from "../components/organisms/DataTable";
+import LoadingSpinner from "../components/atoms/LoadingSpinner";
+import SearchBar from "../components/molecules/Search";
+import ConfirmDialog from "../components/molecules/ConfirmDialog";
 import { Button } from "@dipendrabhandari/react-ui-library";
 import useBoolean from "../hooks/useBoolean";
 import {

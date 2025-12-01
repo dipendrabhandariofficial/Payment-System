@@ -11,12 +11,12 @@ import {
   X,
   Eye,
 } from "lucide-react";
-import SearchBar from "../components/Search";
-import Select from "../components/Select";
-import ReceiptModal from "../components/ReceiptModal";
-import DataTable from "../components/DataTable";
-import LoadingSpinner from "../components/LoadingSpinner";
-import PageLayout from "../components/PageLayout";
+import SearchBar from "../components/molecules/Search";
+import Select from "../components/atoms/Select";
+import ReceiptModal from "../components/organisms/ReceiptModal";
+import DataTable from "../components/organisms/DataTable";
+import LoadingSpinner from "../components/atoms/LoadingSpinner";
+import PageLayout from "../components/templates/PageLayout";
 
 const Payments = () => {
   const [filteredPayments, setFilteredPayments] = useState([]);

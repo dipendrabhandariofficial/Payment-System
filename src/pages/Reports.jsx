@@ -18,11 +18,11 @@ import {
   Tooltip,
 } from "recharts";
 import { Button } from "@dipendrabhandari/react-ui-library";
-import Loader from "../components/Loader";
-import LoadingSpinner from "../components/LoadingSpinner";
-import PageLayout from "../components/PageLayout";
-import StatCard from "../components/StatCard";
-import QuickStat from "../components/QuickStat";
+import Loader from "../components/atoms/Loader";
+import LoadingSpinner from "../components/atoms/LoadingSpinner";
+import PageLayout from "../components/templates/PageLayout";
+import StatCard from "../components/molecules/StatCard";
+import QuickStat from "../components/molecules/QuickStat";
 
 const Reports = () => {
   const [stats, setStats] = useState({

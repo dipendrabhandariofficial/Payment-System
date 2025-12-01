@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import Modal from "./Modal";
+import Modal from "../molecules/Modal";
 import {
   GraduationCap,
   Check,
@@ -10,9 +10,9 @@ import {
   Filter,
   Users,
 } from "lucide-react";
-import Select from "./Select";
+import Select from "../atoms/Select";
 import DataTable from "./DataTable";
-import StatCard from "./StatCard";
+import StatCard from "../molecules/StatCard";
 
 const SemesterUpgradeModal = ({
   isOpen,

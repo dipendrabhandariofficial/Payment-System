@@ -9,12 +9,12 @@ import {
   Users,
   Filter,
 } from "lucide-react";
-import Select from "../components/Select";
-import SearchBar from "../components/Search";
-import LoadingSpinner from "../components/LoadingSpinner";
-import PageLayout from "../components/PageLayout";
-import StatCard from "../components/StatCard";
-import DataTable from "../components/DataTable";
+import Select from "../components/atoms/Select";
+import SearchBar from "../components/molecules/Search";
+import LoadingSpinner from "../components/atoms/LoadingSpinner";
+import PageLayout from "../components/templates/PageLayout";
+import StatCard from "../components/molecules/StatCard";
+import DataTable from "../components/organisms/DataTable";
 
 const DuePayments = () => {
   const { data: students = [], isLoading: studentsLoading } = useStudents();

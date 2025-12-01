@@ -19,11 +19,11 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import Select from "../components/Select";
+import Select from "../components/atoms/Select";
 import { courses as initialCourses, getCourseById } from "../data/courses";
-import LoadingSpinner from "../components/LoadingSpinner";
-import PageLayout from "../components/PageLayout";
-import SearchBar from "../components/Search";
+import LoadingSpinner from "../components/atoms/LoadingSpinner";
+import PageLayout from "../components/templates/PageLayout";
+import SearchBar from "../components/molecules/Search";
 import { useBoolean } from "../hooks/useBoolean";
 
 const AddPayment = () => {

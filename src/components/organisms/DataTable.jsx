@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "../atoms/LoadingSpinner";
 import { useRef } from "react";
-import useInfiniteScroll from "../hooks/useInfiniteScroll";
+import useInfiniteScroll from "../../hooks/useInfiniteScroll";
 
 const DataTable = ({
   columns,
@@ -106,7 +106,7 @@ const DataTable = ({
                       key={colIndex}
                       className="flex justify-between items-start gap-4"
                     >
-                      <span className="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex-shrink-0">
+                      <span className="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider shrink-0">
                         {column}
                       </span>
                       <span className="text-xs sm:text-sm text-gray-900 dark:text-gray-100 text-right">

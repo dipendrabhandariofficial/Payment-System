@@ -2,16 +2,14 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import Loader from "../components/Loader";
+import Loader from "../components/atoms/Loader";
 
 export default function PublicRoute({ children }) {
-  const { user, loading } = useAuth(); 
+  const { user, loading } = useAuth();
 
   // Prevent flicker before auth initializes
   if (loading) {
-    return (
-      <Loader/>
-    )
+    return <Loader />;
   }
 
   if (user) {
