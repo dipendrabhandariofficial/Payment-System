@@ -88,6 +88,7 @@ const Students = () => {
   const [selectedCourse, setSelectedCourse] = useState();
 
   const { data: students = [], isLoading } = useStudents();
+  console.log("🚀 ~ Students ~ students:", students);
   const { data: payments = [], isLoading: paymentsLoading } = usePayments();
 
   const createStudent = useCreateStudent();
@@ -619,7 +620,7 @@ const Students = () => {
           className="lg:w-[50%]"
         />
       </div>
-
+      fdsafawe
       {/* ✅ REACT QUERY: DataTable uses isLoading from useQuery */}
       <DataTable
         columns={tableColumns}
@@ -656,13 +657,13 @@ const Students = () => {
               />
             </td>
             <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm font-medium text-gray-900 dark:text-white">
-              {student.rollNumber}
+              {student.rollNumber || "N/A"}
             </td>
             <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900 dark:text-white">
-              {student.name}
+              {student.name || "N/A"}
             </td>
             <td className="px-2 py-1 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-600 dark:text-gray-300">
-              {student.course}
+              {student.course || "N/A"}
             </td>
             <td className="px-2 py-1 sm:px-6 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-600 dark:text-gray-300">
               {student.semester}
@@ -771,7 +772,6 @@ const Students = () => {
           </div>
         )}
       />
-
       {/* Modals */}
       <Modal
         isOpen={showModal}
@@ -795,13 +795,11 @@ const Students = () => {
           submitButtonIcon={Plus}
         />
       </Modal>
-
       <StudentViewModal
         student={selectedStudent}
         isOpen={showViewModal}
         onClose={closeViewModal}
       />
-
       <Modal
         isOpen={showEditModal}
         onClose={handleCloseEditModal}
@@ -828,7 +826,6 @@ const Students = () => {
           submitButtonIcon={Edit}
         />
       </Modal>
-
       <BulkStudentImport
         isOpen={showBulkImportModal}
         onClose={closeBulkImportModal}
@@ -837,7 +834,6 @@ const Students = () => {
         generateRollNumber={generateRollNumber}
         existingStudents={students}
       />
-
       {/* Bulk Action Popup */}
       {showBulkActionPopup && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
@@ -878,7 +874,6 @@ const Students = () => {
           </div>
         </div>
       )}
-
       {/* Confirmation Dialog */}
       <ConfirmDialog
         isOpen={showConfirmDialog}
@@ -890,7 +885,6 @@ const Students = () => {
         cancelText="Cancel"
         type="danger"
       />
-
       {/* Semester Upgrade Modal */}
       <SemesterUpgradeModal
         isOpen={showSemesterUpgradeModal}

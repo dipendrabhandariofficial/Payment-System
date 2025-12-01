@@ -13,7 +13,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const loginMutation = useLogin();
   const navigate = useNavigate();
-  const { loginUser } = useAuth();
+  const { loginUser, setAuth } = useAuth();
   const [showPassword, { toggle: toggleShowPassword }] = useBoolean(false);
 
   const handleSubmit = async (e) => {
@@ -26,7 +26,7 @@ const Login = () => {
 
       if (authData) {
         console.log(" [Login] Success! Received Data:", authData);
-        loginUser(authData);
+        setAuth(authData);
         navigate("/dashboard");
       }
     } catch (err) {

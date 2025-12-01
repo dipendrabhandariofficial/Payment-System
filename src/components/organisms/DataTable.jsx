@@ -51,6 +51,7 @@ const DataTable = ({
       </div>
     );
   }
+  console.log("hello");
 
   return (
     <>
@@ -88,7 +89,6 @@ const DataTable = ({
           </table>
         </div>
       </div>
-
       {/* Mobile/Tablet Card View - visible on small/medium screens */}
       <div
         ref={setMobileRoot}
