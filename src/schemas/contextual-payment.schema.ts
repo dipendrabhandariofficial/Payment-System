@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { advancedPaymentSchema } from "./payment.schema";
 import { Student } from "../types";
 
@@ -32,7 +31,7 @@ export const createContextualPaymentSchema = (
     // 1. Student selection validation
     if (!context.selectedStudent) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "Please select a student",
         path: ["student"],
       });
@@ -43,7 +42,7 @@ export const createContextualPaymentSchema = (
     const amount = parseFloat(data.amount as any);
     if (!amount || amount <= 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "Enter a valid amount",
         path: ["amount"],
       });
@@ -55,7 +54,7 @@ export const createContextualPaymentSchema = (
     // 3. Check if all semester fees are paid
     if (!context.availableSemesters.length) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "All semester fees are already paid!",
         path: ["semester"],
       });
@@ -69,7 +68,7 @@ export const createContextualPaymentSchema = (
 
     if (!payableSemester) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Pay Semester ${context.availableSemesters[0].semester} first.`,
         path: ["semester"],
       });
@@ -79,7 +78,7 @@ export const createContextualPaymentSchema = (
     // 5. Check if amount exceeds remaining fees
     if (amount > payableSemester.remainingAmount) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Amount exceeds remaining fees: ${formatCurrency(
           payableSemester.remainingAmount
         )}`,

@@ -14,6 +14,7 @@ import { Button } from "@dipendrabhandari/react-ui-library";
 import useBoolean from "../hooks/useBoolean";
 import useStudentFilters from "../hooks/useStudentFilters";
 import useStudentFormLogic from "../hooks/useStudentFormLogic";
+import { useToast } from "../context/ToastContext";
 import {
   useStudents,
   useCreateStudent,
@@ -43,6 +44,7 @@ import {
 import { courses as initialCourses } from "../data/courses";
 
 const Students = () => {
+  const { toast } = useToast();
   // Boolean states using useBoolean hook for cleaner state management
   const [showModal, { on: openModal, off: closeModal }] = useBoolean();
   const [showViewModal, { on: openViewModal, off: closeViewModal }] =
@@ -334,7 +336,6 @@ const Students = () => {
         <div className="flex flex-wrap md:inline-flex items-center gap-2 sm:gap-3">
           <Button
             onClick={() => {
-              console.log("hello");
               openBulkImportModal();
             }}
             leftIcon={<Upload className="w-4 h-4 sm:w-5 sm:h-5" />}

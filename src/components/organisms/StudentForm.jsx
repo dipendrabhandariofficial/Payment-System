@@ -126,8 +126,24 @@ const StudentForm = ({
     return "border-gray-200 focus:ring-gray-400 focus:border-gray-400";
   };
 
+  // Handle form submission
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+
+    // validateAll returns true if valid, false if invalid
+    // It also touches all fields to show errors
+    const isValid = validateAll();
+
+    if (isValid && onSubmit) {
+      onSubmit(e);
+    } else {
+      // Optional: scroll to first error or just let user see the red fields
+      console.log("Form validation failed");
+    }
+  };
+
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleFormSubmit}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {showPersonalInfo && (
           <>
@@ -467,7 +483,6 @@ const StudentForm = ({
             {onSubmit && (
               <button
                 type="submit"
-                onClick={onSubmit}
                 disabled={submitting}
                 className="px-6 py-2.5 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center gap-2"
               >

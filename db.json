@@ -1151,6 +1151,118 @@
       "paidFees": 50000,
       "pendingFees": 250000,
       "rowNum": 3
+    },
+    {
+      "name": "test",
+      "rollNumber": "BOSIE-20251205-001",
+      "email": "test@s.s",
+      "phone": "12345671234",
+      "address": "",
+      "guardianName": "",
+      "guardianPhone": "",
+      "guardianRelation": "",
+      "admissionDate": "2025-12-05",
+      "courseId": "bsc-economics",
+      "course": "Bachelor of Science in Economics",
+      "semester": "1",
+      "totalFees": 216000,
+      "semesterFees": [
+        {
+          "semester": "1",
+          "amount": 36000,
+          "dueDate": "2025-12-05",
+          "paid": false
+        },
+        {
+          "semester": "2",
+          "amount": 36000,
+          "dueDate": "2026-06-05",
+          "paid": false
+        },
+        {
+          "semester": "3",
+          "amount": 36000,
+          "dueDate": "2026-12-05",
+          "paid": false
+        },
+        {
+          "semester": "4",
+          "amount": 36000,
+          "dueDate": "2027-06-05",
+          "paid": false
+        },
+        {
+          "semester": "5",
+          "amount": 36000,
+          "dueDate": "2027-12-05",
+          "paid": false
+        },
+        {
+          "semester": "6",
+          "amount": 36000,
+          "dueDate": "2028-06-05",
+          "paid": false
+        }
+      ],
+      "paidFees": 0,
+      "pendingFees": 216000,
+      "id": "3bb6"
+    },
+    {
+      "id": "76a9",
+      "name": "Matt Reichel",
+      "rollNumber": "BOBA-20251205-001",
+      "email": "your.email+fakedata52382@gmail.com",
+      "phone": "480-460-4481",
+      "address": "",
+      "guardianName": "",
+      "guardianPhone": "",
+      "guardianRelation": "",
+      "admissionDate": "2025-12-05",
+      "courseId": "bba",
+      "course": "Bachelor of Business Administration",
+      "semester": "1",
+      "totalFees": 252000,
+      "semesterFees": [
+        {
+          "semester": "1",
+          "amount": 42000,
+          "dueDate": "2025-12-05",
+          "paid": false
+        },
+        {
+          "semester": "2",
+          "amount": 42000,
+          "dueDate": "2026-06-05",
+          "paid": false
+        },
+        {
+          "semester": "3",
+          "amount": 42000,
+          "dueDate": "2026-12-05",
+          "paid": false
+        },
+        {
+          "semester": "4",
+          "amount": 42000,
+          "dueDate": "2027-06-05",
+          "paid": false
+        },
+        {
+          "semester": "5",
+          "amount": 42000,
+          "dueDate": "2027-12-05",
+          "paid": false
+        },
+        {
+          "semester": "6",
+          "amount": 42000,
+          "dueDate": "2028-06-05",
+          "paid": false
+        }
+      ],
+      "paidFees": 0,
+      "pendingFees": 252000
     }
   ],
   "payments": [

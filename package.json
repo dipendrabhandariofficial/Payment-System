@@ -11,7 +11,7 @@
     "start": "json-server --watch db.json"
   },
   "dependencies": {
-    "@dipendrabhandari/react-ui-library": "^0.1.0",
+    "@dipendrabhandari/react-ui-library": "^0.1.1",
     "@tailwindcss/vite": "^4.1.16",
     "@tanstack/react-query": "^5.90.10",
     "@tanstack/react-query-devtools": "^5.91.0",
