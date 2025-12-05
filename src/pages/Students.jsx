@@ -146,10 +146,9 @@ const Students = () => {
   };
 
   const handleCloseModal = () => {
-    if (!submitting) {
-      closeModal();
-      resetForm();
-    }
+    setSubmitting(false); // Reset submitting state
+    closeModal();
+    resetForm();
   };
 
   const handleView = (student) => {
@@ -218,11 +217,10 @@ const Students = () => {
   };
 
   const handleCloseEditModal = () => {
-    if (!submitting) {
-      closeEditModal();
-      setSelectedStudent(null);
-      resetForm();
-    }
+    setSubmitting(false); // Reset submitting state
+    closeEditModal();
+    setSelectedStudent(null);
+    resetForm();
   };
 
   // Handle checkbox selection
@@ -533,7 +531,6 @@ const Students = () => {
         title="Add New Student"
         subtitle="Fill in the student information below"
         icon={User}
-        disabled={submitting}
       >
         <StudentForm
           isEditMode={!!selectedStudent}
@@ -564,7 +561,6 @@ const Students = () => {
             : "Update student information"
         }
         icon={Edit}
-        disabled={submitting}
       >
         <StudentForm
           formData={formData}

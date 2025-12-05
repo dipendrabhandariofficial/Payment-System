@@ -580,8 +580,8 @@
           "paid": false
         }
       ],
-      "paidFees": 0,
-      "pendingFees": 300000,
+      "paidFees": 50000,
+      "pendingFees": 250000,
       "rowNum": 3
     },
     {
@@ -694,8 +694,8 @@
           "paid": false
         }
       ],
-      "paidFees": 0,
-      "pendingFees": 300000,
+      "paidFees": 50000,
+      "pendingFees": 250000,
       "rowNum": 2
     },
     {
@@ -1034,8 +1034,8 @@
           "paid": false
         }
       ],
-      "paidFees": 0,
-      "pendingFees": 300000,
+      "paidFees": 50000,
+      "pendingFees": 250000,
       "rowNum": 3
     },
     {
@@ -1490,6 +1490,78 @@
       "course": "Bachelor of Science in Computer Science",
       "semester": "1",
       "receiptNumber": "RCP1764846090485",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
+      "status": "Completed"
+    },
+    {
+      "id": "3189",
+      "studentId": "5e5e",
+      "studentName": "John Doe",
+      "rollNumber": "BOSICS-20251120-009",
+      "amount": 30000,
+      "paymentDate": "2025-12-05",
+      "paymentMethod": "Cash",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "1",
+      "receiptNumber": "RCP1764910671804",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
+      "status": "Completed"
+    },
+    {
+      "id": "7c88",
+      "studentId": "5e5e",
+      "studentName": "John Doe",
+      "rollNumber": "BOSICS-20251120-009",
+      "amount": 20000,
+      "paymentDate": "2025-12-05",
+      "paymentMethod": "Online",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "1",
+      "receiptNumber": "RCP1764910684263",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
+      "status": "Completed"
+    },
+    {
+      "id": "7d7e",
+      "studentId": "ab52",
+      "studentName": "Somnath",
+      "rollNumber": "BOSICS-20251120-005-1",
+      "amount": 50000,
+      "paymentDate": "2025-12-05",
+      "paymentMethod": "Cash",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "1",
+      "receiptNumber": "RCP1764921666226",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
+      "status": "Completed"
+    },
+    {
+      "id": "c958",
+      "studentId": "7ce3",
+      "studentName": "Jane Smith",
+      "rollNumber": "BOSICS-20251202-001-1",
+      "amount": 50000,
+      "paymentDate": "2027-02-05",
+      "paymentMethod": "Cash",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "1",
+      "receiptNumber": "RCP1764921862577",
       "transactionId": null,
       "referenceNumber": null,
       "bankName": null,

@@ -84,10 +84,10 @@ const StudentForm = ({
     },
   };
 
-  //Initialize validation hook with formData directly
+  // Initialize validation hook with formData directly
   const { errors, touched, handleBlur, showError, validateAll, setValues } =
     useFormValidation(formData, validationRules, {
-      validateOnChange: false,
+      validateOnChange: true,
       validateOnBlur: true,
     });
 
@@ -102,14 +102,6 @@ const StudentForm = ({
       onValidationChange(isValid, errors);
     }
   }, [errors, touched, onValidationChange, validateAll]);
-
-  // // Only keep the validation change effect
-  // useEffect(() => {
-  //   if (onValidationChange) {
-  //     const isValid = validateAll();
-  //     onValidationChange(isValid, errors);
-  //   }
-  // }, [errors, touched]);
 
   const handleCourseChange = (e) => onChange?.(e);
 
@@ -466,8 +458,7 @@ const StudentForm = ({
               <button
                 type="button"
                 onClick={onCancel}
-                disabled={submitting}
-                className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2"
               >
                 <X className="w-5 h-5" />
                 Cancel

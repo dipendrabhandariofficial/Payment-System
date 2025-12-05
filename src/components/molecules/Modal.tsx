@@ -10,7 +10,6 @@ interface modalprops {
   children: React.ReactNode;
   maxWidth?: string;
   size?: "small" | "default" | "large" | "xlarge";
-  disabled?: boolean;
 }
 
 const Modal = ({
@@ -22,7 +21,6 @@ const Modal = ({
   children,
   maxWidth = "max-w-2xl",
   size = "default",
-  disabled = false,
 }: modalprops) => {
   if (!isOpen) return null;
 
@@ -39,7 +37,7 @@ const Modal = ({
   return (
     <div
       className="fixed inset-0 z-800 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={!disabled ? onClose : undefined}
+      onClick={onClose}
     >
       <div
         className={`bg-white rounded-lg shadow-xl ${modalWidth} w-full max-h-[90vh] flex flex-col`}
@@ -62,7 +60,6 @@ const Modal = ({
           </div>
           <button
             onClick={onClose}
-            disabled={disabled}
             className="bg-white/10 hover:bg-white/20 rounded-lg p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
             aria-label="Close modal"
           >
