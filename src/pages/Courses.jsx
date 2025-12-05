@@ -395,7 +395,7 @@ const Courses = () => {
       {showModal && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={handleCloseModal}
+          onClick={closeModal}
         >
           <div
             className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
@@ -809,7 +809,7 @@ const Courses = () => {
       {showViewModal && selectedCourse && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setShowViewModal(false)}
+          onClick={() => closeViewModal()}
         >
           <div
             className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
@@ -826,7 +826,7 @@ const Courses = () => {
                 </div>
               </div>
               <button
-                onClick={() => setShowViewModal(false)}
+                onClick={() => closeViewModal()}
                 className="bg-white/10 hover:bg-white/20 rounded-lg p-2 transition-colors"
               >
                 <X className="w-6 h-6" />
@@ -898,7 +898,7 @@ const Courses = () => {
 
             <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 rounded-b-lg flex items-center justify-end gap-3">
               <button
-                onClick={() => setShowViewModal(false)}
+                onClick={closeViewModal}
                 className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
               >
                 Close

@@ -16,7 +16,6 @@ export interface UseInfiniteScrollOptions<T> {
 }
 
 export interface UseBooleanReturn {
-  value: boolean;
   on: () => void;
   off: () => void;
   toggle: () => void;

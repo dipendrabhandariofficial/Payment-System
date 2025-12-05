@@ -1,7 +1,7 @@
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
-import { useToast } from "@context";
+import { useToast } from "@/context";
 import { authApi } from "./auth.api";
-import type { AuthResponse } from "@types";
+import type { AuthResponse } from "@/types";
 
 interface LoginCredentials {
   email: string;

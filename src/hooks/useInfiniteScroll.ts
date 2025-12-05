@@ -1,60 +1,75 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo } from "react";
 
-interface UseDisclosureReturn {
-  isOpen: boolean;
-  onOpen: () => void;
-  onClose: () => void;
-  onToggle: () => void;
+interface UseInfiniteScrollOptions<T> {
+  items: T[];
+  pageSize?: number;
+  rootElement?: HTMLElement | null;
 }
 
-interface UseDisclosureOptions {
-  defaultIsOpen?: boolean;
-  onOpen?: () => void;
-  onClose?: () => void;
+interface UseInfiniteScrollReturn<T> {
+  paginatedItems: T[];
+  hasMore: boolean;
+  loaderRef: React.RefObject<HTMLDivElement | null>;
+  loadMore: () => void;
 }
 
-/**
- * Enhanced hook for managing disclosure state (modals, drawers, etc.)
- * with optional callbacks
- * 
- * @param options - Configuration options
- * @returns Disclosure control object
- * 
- * @example
- * const { isOpen, onOpen, onClose, onToggle } = useDisclosure({
- *   onOpen: () => console.log('Modal opened'),
- *   onClose: () => console.log('Modal closed')
- * });
- */
-export const useDisclosure = (options: UseDisclosureOptions = {}): UseDisclosureReturn => {
-  const {
-    defaultIsOpen = false,
-    onOpen: onOpenCallback,
-    onClose: onCloseCallback,
-  } = options;
+export const useInfiniteScroll = <T>({
+  items,
+  pageSize = 10,
+  rootElement = null,
+}: UseInfiniteScrollOptions<T>): UseInfiniteScrollReturn<T> => {
+  const [page, setPage] = useState(1);
+  const loaderRef = useRef<HTMLDivElement>(null);
 
-  const [isOpen, setIsOpen] = useState<boolean>(defaultIsOpen);
+  // Reset page when items change (e.g., filtering)
+  useEffect(() => {
+    setPage(1);
+  }, [items]);
 
-  const onOpen = useCallback(() => {
-    setIsOpen(true);
-    onOpenCallback?.();
-  }, [onOpenCallback]);
+  const paginatedItems = useMemo(() => {
+    return items.slice(0, page * pageSize);
+  }, [items, page, pageSize]);
 
-  const onClose = useCallback(() => {
-    setIsOpen(false);
-    onCloseCallback?.();
-  }, [onCloseCallback]);
+  const hasMore = paginatedItems.length < items.length;
 
-  const onToggle = useCallback(() => {
-    isOpen ? onClose() : onOpen();
-  }, [isOpen, onOpen, onClose]);
+  const loadMore = () => {
+    if (hasMore) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first.isIntersecting && hasMore) {
+          loadMore();
+        }
+      },
+      {
+        root: rootElement,
+        threshold: 0.1,
+      }
+    );
+
+    const currentLoader = loaderRef.current;
+    if (currentLoader) {
+      observer.observe(currentLoader);
+    }
+
+    return () => {
+      if (currentLoader) {
+        observer.unobserve(currentLoader);
+      }
+    };
+  }, [hasMore, rootElement]);
 
   return {
-    isOpen,
-    onOpen,
-    onClose,
-    onToggle,
+    paginatedItems,
+    hasMore,
+    loaderRef,
+    loadMore,
   };
 };
 
-export default useDisclosure;
+export default useInfiniteScroll;

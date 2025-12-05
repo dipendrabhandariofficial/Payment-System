@@ -1,17 +1,19 @@
-// src/layouts/MainLayout.jsx
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 
-const MainLayout = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+const MainLayout: React.FC = () => {
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   return (
     <div
       className={`flex flex-col h-screen overflow-hidden ${
-        darkMode ? "dark bg-gray-900 text-gray-100" : "bg-gray-100 text-gray-900"
+        darkMode
+          ? "dark bg-gray-900 text-gray-100"
+          : "bg-gray-100 text-gray-900"
       }`}
     >
       {/* Navbar (fixed at top) */}
@@ -24,7 +26,12 @@ const MainLayout = () => {
       {/* Main Container (fills rest of screen) */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar (fixed height, scrollable if needed) */}
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          isCollapsed={isCollapsed}
+          toggleCollapse={() => setIsCollapsed(!isCollapsed)}
+        />
 
         {/* Content Area (only this scrolls) */}
         <main className="flex-1 overflow-y-auto p-6 transition-all duration-300 ease-in-out *:">

@@ -1,7 +1,7 @@
-import React from 'react';
-import { DollarSign, Calendar, CreditCard } from 'lucide-react';
+import { DollarSign, Calendar, CreditCard } from "lucide-react";
+import { Payment } from "@/types";
 
-const PaymentCard = ({ payment }) => {
+const PaymentCard = ({ payment }: { payment: Payment }) => {
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
       <div className="flex justify-between items-start mb-4">

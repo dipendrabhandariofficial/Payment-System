@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { MoreVertical, Eye, Edit, Trash2 } from "lucide-react";
+import { useBoolean } from "../../hooks/useBoolean";
 
 const ActionMenu = ({
   className = "",
@@ -9,15 +10,24 @@ const ActionMenu = ({
   viewLabel = "View",
   editLabel = "Edit",
   deleteLabel = "Delete",
+}: {
+  className?: string;
+  onView?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  viewLabel?: string;
+  editLabel?: string;
+  deleteLabel?: string;
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef(null);
+  const [isOpen, { on: setIsOpen, off: setIsClose, toggle: setIsToggle }] =
+    useBoolean(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu on outside click
   useEffect(() => {
-    function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setIsOpen(false);
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsClose();
       }
     }
 
@@ -31,7 +41,7 @@ const ActionMenu = ({
       <button
         onClick={(e) => {
           e.stopPropagation();
-          setIsOpen(!isOpen);
+          setIsToggle();
         }}
         className="p-2  text-gray-700  dark:hover:bg-gray-700 rounded-lg transition-colors"
       >
@@ -49,7 +59,7 @@ const ActionMenu = ({
             <button
               onClick={() => {
                 onView();
-                setIsOpen(false);
+                setIsOpen();
               }}
               className="w-full px-4 py-2 text-left text-sm flex items-center gap-2
                          text-gray-700 dark:text-gray-200 hover:bg-gray-300 
@@ -64,7 +74,7 @@ const ActionMenu = ({
             <button
               onClick={() => {
                 onEdit();
-                setIsOpen(false);
+                setIsClose();
               }}
               className="w-full px-4 py-2 text-left text-sm flex items-center gap-2
                          text-gray-700 dark:text-gray-200 hover:bg-gray-100 
@@ -79,7 +89,7 @@ const ActionMenu = ({
             <button
               onClick={() => {
                 onDelete();
-                setIsOpen(false);
+                setIsClose();
               }}
               className="w-full px-4 py-2 text-left text-sm flex items-center gap-2
                          text-red-600 hover:bg-red-50 dark:text-red-400

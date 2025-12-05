@@ -12,7 +12,6 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-// import { useFormValidation } from "../hooks/useFormValidation";
 import { useFormValidation } from "@dipendrabhandari/react-ui-library";
 
 const StudentForm = ({
@@ -85,17 +84,16 @@ const StudentForm = ({
     },
   };
 
-  // Initialize validation hook
+  //Initialize validation hook with formData directly
   const { errors, touched, handleBlur, showError, validateAll, setValues } =
     useFormValidation(formData, validationRules, {
       validateOnChange: false,
       validateOnBlur: true,
     });
 
-  // Sync formData changes from parent to validation hook
   useEffect(() => {
     setValues(formData);
-  }, [formData]);
+  }, [formData, setValues]);
 
   // Notify parent about validation state changes
   useEffect(() => {
@@ -103,15 +101,17 @@ const StudentForm = ({
       const isValid = validateAll();
       onValidationChange(isValid, errors);
     }
-  }, [errors, touched]);
+  }, [errors, touched, onValidationChange, validateAll]);
 
-  const handleCourseChange = (e) => {
-    // Simply pass the event to the parent's onChange handler
-    // The parent (Students.jsx) will handle all the logic
-    if (onChange) {
-      onChange(e);
-    }
-  };
+  // // Only keep the validation change effect
+  // useEffect(() => {
+  //   if (onValidationChange) {
+  //     const isValid = validateAll();
+  //     onValidationChange(isValid, errors);
+  //   }
+  // }, [errors, touched]);
+
+  const handleCourseChange = (e) => onChange?.(e);
 
   // Helper function to render error message
   const renderError = (fieldName) => {
@@ -181,7 +181,7 @@ const StudentForm = ({
                   name="rollNumber"
                   value={formData.rollNumber}
                   onChange={onChange}
-                  disabled={isEditMode} // ✅ Disable in edit mode
+                  disabled={isEditMode}
                   className={`w-full pl-10 pr-3 py-2 border rounded transition
         ${
           isEditMode

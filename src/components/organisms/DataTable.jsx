@@ -51,8 +51,6 @@ const DataTable = ({
       </div>
     );
   }
-  console.log("hello");
-
   return (
     <>
       {/* Desktop Table View - hidden on small screens */}

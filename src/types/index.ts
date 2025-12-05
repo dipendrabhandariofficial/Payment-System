@@ -1,7 +1,3 @@
-/**
- * Core type definitions for the Payment System
- */
-
 export interface Course {
   id: string;
   name: string;
@@ -40,6 +36,8 @@ export interface Student {
   updatedAt?: string;
 }
 
+export type StudentFormData = Omit<Student, "id" | "createdAt" | "updatedAt">;
+
 export interface Payment {
   id: string;
   studentId: string;
@@ -47,7 +45,7 @@ export interface Payment {
   rollNumber: string;
   amount: number;
   paymentDate: string;
-  paymentMethod: 'Cash' | 'Online' | 'Check' | 'Card';
+  paymentMethod: "Cash" | "Online" | "Check" | "Card";
   courseId?: string;
   course: string;
   semester: string | number;
@@ -56,7 +54,7 @@ export interface Payment {
   referenceNumber?: string;
   bankName?: string;
   remarks?: string;
-  status: 'Pending' | 'Completed' | 'Failed';
+  status: "Pending" | "Completed" | "Failed";
   createdAt?: string;
   updatedAt?: string;
 }
@@ -76,7 +74,7 @@ export interface User {
   name: string;
   email: string;
   password?: string;
-  role?: 'admin' | 'staff' | 'user';
+  role?: "admin" | "staff" | "user";
   createdAt?: string;
   updatedAt?: string;
 }
@@ -113,8 +111,8 @@ export interface PaginatedResponse<T> extends ApiResponse<T> {
   meta?: PaginationMeta;
 }
 
-export type SortOrder = 'asc' | 'desc';
-export type FilterType = 'all' | 'overdue' | 'upcoming';
-export type PaymentMethod = 'Cash' | 'Online' | 'Check' | 'Card';
-export type PaymentStatus = 'Pending' | 'Completed' | 'Failed';
-export type UserRole = 'admin' | 'staff' | 'user';
+export type SortOrder = "asc" | "desc";
+export type FilterType = "all" | "overdue" | "upcoming";
+export type PaymentMethod = "Cash" | "Online" | "Check" | "Card";
+export type PaymentStatus = "Pending" | "Completed" | "Failed";
+export type UserRole = "admin" | "staff" | "user";

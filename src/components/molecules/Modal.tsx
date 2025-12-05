@@ -1,6 +1,18 @@
 import React from "react";
 import { X } from "lucide-react";
 
+interface modalprops {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  subtitle?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+  maxWidth?: string;
+  size?: "small" | "default" | "large" | "xlarge";
+  disabled?: boolean;
+}
+
 const Modal = ({
   isOpen,
   onClose,
@@ -11,7 +23,7 @@ const Modal = ({
   maxWidth = "max-w-2xl",
   size = "default",
   disabled = false,
-}) => {
+}: modalprops) => {
   if (!isOpen) return null;
 
   // Size mapping for flexibility

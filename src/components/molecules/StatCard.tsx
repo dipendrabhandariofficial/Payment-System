@@ -1,16 +1,26 @@
-import React from "react";
+interface statCardProps {
+  title: string;
+  value: string;
+  subtitle?: string;
+  Icon?: React.ComponentType<{ className?: string }>;
+  iconBg?: string;
+  iconColor?: string;
+  valueColor?: string;
+  onClick?: () => void;
+  className?: string;
+}
 
 const StatCard = ({
   title,
   value,
   subtitle,
-  icon: Icon,
+  Icon,
   iconBg = "bg-gray-100",
   iconColor = "text-gray-700",
   valueColor = "text-gray-900",
   onClick,
   className = "",
-}) => {
+}: statCardProps) => {
   const cardClasses = `
     bg-white p-4 rounded-lg shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white
     ${onClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}
@@ -36,4 +46,3 @@ const StatCard = ({
 };
 
 export default StatCard;
-

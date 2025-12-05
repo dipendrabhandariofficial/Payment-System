@@ -1,7 +1,12 @@
-import React from "react";
 import { AlertCircle, CheckCircle, X } from "lucide-react";
 
-const MessageAlert = ({ type, message, onClose }) => {
+interface MessageAlertProps {
+  type: string;
+  message: string;
+  onClose: () => void;
+}
+
+const MessageAlert = ({ type, message, onClose }: MessageAlertProps) => {
   if (!message) return null;
 
   const config = {
@@ -25,10 +30,17 @@ const MessageAlert = ({ type, message, onClose }) => {
     },
   };
 
-  const { bg, border, text, icon: Icon } = config[type] || config.error;
+  const {
+    bg,
+    border,
+    text,
+    icon: Icon,
+  } = config[type as keyof typeof config] || config.error;
 
   return (
-    <div className={`mb-6 p-4 ${bg} border-l-4 ${border} ${text} rounded-lg flex items-center`}>
+    <div
+      className={`mb-6 p-4 ${bg} border-l-4 ${border} ${text} rounded-lg flex items-center`}
+    >
       <Icon className="w-5 h-5 mr-3 shrink-0" />
       <span className="text-sm font-medium flex-1">{message}</span>
       {onClose && (
@@ -41,4 +53,3 @@ const MessageAlert = ({ type, message, onClose }) => {
 };
 
 export default MessageAlert;
-

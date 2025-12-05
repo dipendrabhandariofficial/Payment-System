@@ -17,62 +17,6 @@
   ],
   "students": [
     {
-      "id": "bb8a",
-      "name": "gita ",
-      "rollNumber": "123",
-      "email": "gita@gmail.com",
-      "phone": "12345",
-      "address": "",
-      "guardianName": "",
-      "guardianPhone": "",
-      "guardianRelation": "",
-      "admissionDate": "2025-11-18",
-      "courseId": "bsc-bio",
-      "course": "Bachelor of Science in Biology",
-      "semester": "1",
-      "totalFees": 240000,
-      "semesterFees": [
-        {
-          "semester": "1",
-          "amount": 40000,
-          "dueDate": "2025-11-18",
-          "paid": false
-        },
-        {
-          "semester": "2",
-          "amount": 40000,
-          "dueDate": "2026-05-18",
-          "paid": false
-        },
-        {
-          "semester": "3",
-          "amount": 40000,
-          "dueDate": "2026-11-18",
-          "paid": false
-        },
-        {
-          "semester": "4",
-          "amount": 40000,
-          "dueDate": "2027-05-18",
-          "paid": false
-        },
-        {
-          "semester": "5",
-          "amount": 40000,
-          "dueDate": "2027-11-18",
-          "paid": false
-        },
-        {
-          "semester": "6",
-          "amount": 40000,
-          "dueDate": "2028-05-18",
-          "paid": false
-        }
-      ],
-      "paidFees": 80000,
-      "pendingFees": 160000
-    },
-    {
       "id": "4492",
       "name": "Ram",
       "rollNumber": "1234",
@@ -294,8 +238,8 @@
           "paid": false
         }
       ],
-      "paidFees": 0,
-      "pendingFees": 228000,
+      "paidFees": 38000,
+      "pendingFees": 190000,
       "rowNum": 3
     },
     {
@@ -408,8 +352,8 @@
           "paid": false
         }
       ],
-      "paidFees": 0,
-      "pendingFees": 300000,
+      "paidFees": 50000,
+      "pendingFees": 250000,
       "rowNum": 2
     },
     {
@@ -921,8 +865,8 @@
           "paid": false
         }
       ],
-      "paidFees": 0,
-      "pendingFees": 216000
+      "paidFees": 36000,
+      "pendingFees": 180000
     },
     {
       "id": "beb8",
@@ -979,6 +923,234 @@
       ],
       "paidFees": 0,
       "pendingFees": 228000
+    },
+    {
+      "id": "f1b4",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "9876543210",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "admissionDate": "2025-12-02",
+      "semester": "1",
+      "address": "Kathmandu",
+      "guardianName": "Jane Doe",
+      "guardianPhone": "9876543211",
+      "guardianRelation": "Mother",
+      "rollNumber": "BOSICS-20251202-001",
+      "totalFees": 300000,
+      "semesterFees": [
+        {
+          "semester": "1",
+          "amount": 50000,
+          "dueDate": "2025-12-02",
+          "paid": false
+        },
+        {
+          "semester": "2",
+          "amount": 50000,
+          "dueDate": "2026-06-02",
+          "paid": false
+        },
+        {
+          "semester": "3",
+          "amount": 50000,
+          "dueDate": "2026-12-02",
+          "paid": false
+        },
+        {
+          "semester": "4",
+          "amount": 50000,
+          "dueDate": "2027-06-02",
+          "paid": false
+        },
+        {
+          "semester": "5",
+          "amount": 50000,
+          "dueDate": "2027-12-02",
+          "paid": false
+        },
+        {
+          "semester": "6",
+          "amount": 50000,
+          "dueDate": "2028-06-02",
+          "paid": false
+        }
+      ],
+      "paidFees": 0,
+      "pendingFees": 300000,
+      "rowNum": 2
+    },
+    {
+      "id": "7ce3",
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "phone": "9876543212",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "admissionDate": "2025-12-02",
+      "semester": "1",
+      "address": "Pokhara",
+      "guardianName": "John Smith",
+      "guardianPhone": "9876543213",
+      "guardianRelation": "Father",
+      "rollNumber": "BOSICS-20251202-001-1",
+      "totalFees": 300000,
+      "semesterFees": [
+        {
+          "semester": "1",
+          "amount": 50000,
+          "dueDate": "2025-12-02",
+          "paid": false
+        },
+        {
+          "semester": "2",
+          "amount": 50000,
+          "dueDate": "2026-06-02",
+          "paid": false
+        },
+        {
+          "semester": "3",
+          "amount": 50000,
+          "dueDate": "2026-12-02",
+          "paid": false
+        },
+        {
+          "semester": "4",
+          "amount": 50000,
+          "dueDate": "2027-06-02",
+          "paid": false
+        },
+        {
+          "semester": "5",
+          "amount": 50000,
+          "dueDate": "2027-12-02",
+          "paid": false
+        },
+        {
+          "semester": "6",
+          "amount": 50000,
+          "dueDate": "2028-06-02",
+          "paid": false
+        }
+      ],
+      "paidFees": 0,
+      "pendingFees": 300000,
+      "rowNum": 3
+    },
+    {
+      "id": "a451",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "9876543210",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "admissionDate": "2025-12-04",
+      "semester": "1",
+      "address": "Kathmandu",
+      "guardianName": "Jane Doe",
+      "guardianPhone": "9876543211",
+      "guardianRelation": "Mother",
+      "rollNumber": "BOSICS-20251204-001",
+      "totalFees": 300000,
+      "semesterFees": [
+        {
+          "semester": "1",
+          "amount": 50000,
+          "dueDate": "2025-12-04",
+          "paid": false
+        },
+        {
+          "semester": "2",
+          "amount": 50000,
+          "dueDate": "2026-06-04",
+          "paid": false
+        },
+        {
+          "semester": "3",
+          "amount": 50000,
+          "dueDate": "2026-12-04",
+          "paid": false
+        },
+        {
+          "semester": "4",
+          "amount": 50000,
+          "dueDate": "2027-06-04",
+          "paid": false
+        },
+        {
+          "semester": "5",
+          "amount": 50000,
+          "dueDate": "2027-12-04",
+          "paid": false
+        },
+        {
+          "semester": "6",
+          "amount": 50000,
+          "dueDate": "2028-06-04",
+          "paid": false
+        }
+      ],
+      "paidFees": 50000,
+      "pendingFees": 250000,
+      "rowNum": 2
+    },
+    {
+      "id": "6f90",
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "phone": "9876543212",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "admissionDate": "2025-12-04",
+      "semester": "1",
+      "address": "Pokhara",
+      "guardianName": "John Smith",
+      "guardianPhone": "9876543213",
+      "guardianRelation": "Father",
+      "rollNumber": "BOSICS-20251204-001-1",
+      "totalFees": 300000,
+      "semesterFees": [
+        {
+          "semester": "1",
+          "amount": 50000,
+          "dueDate": "2025-12-04",
+          "paid": false
+        },
+        {
+          "semester": "2",
+          "amount": 50000,
+          "dueDate": "2026-06-04",
+          "paid": false
+        },
+        {
+          "semester": "3",
+          "amount": 50000,
+          "dueDate": "2026-12-04",
+          "paid": false
+        },
+        {
+          "semester": "4",
+          "amount": 50000,
+          "dueDate": "2027-06-04",
+          "paid": false
+        },
+        {
+          "semester": "5",
+          "amount": 50000,
+          "dueDate": "2027-12-04",
+          "paid": false
+        },
+        {
+          "semester": "6",
+          "amount": 50000,
+          "dueDate": "2028-06-04",
+          "paid": false
+        }
+      ],
+      "paidFees": 50000,
+      "pendingFees": 250000,
+      "rowNum": 3
     }
   ],
   "payments": [
@@ -1056,7 +1228,7 @@
     },
     {
       "id": "4338",
-      "studentId": "bb8a",
+      "studentId": null,
       "studentName": "gita ",
       "rollNumber": "123",
       "amount": 40000,
@@ -1110,7 +1282,7 @@
     },
     {
       "id": "6440",
-      "studentId": "bb8a",
+      "studentId": null,
       "studentName": "gita ",
       "rollNumber": "123",
       "amount": 40000,
@@ -1228,6 +1400,96 @@
       "course": "Bachelor of Science in Physics",
       "semester": "1",
       "receiptNumber": "RCP1764098539107",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
+      "status": "Completed"
+    },
+    {
+      "id": "7d29",
+      "studentId": "ef68",
+      "studentName": "Ramnath",
+      "rollNumber": "BOSIE-20251125-001",
+      "amount": 36000,
+      "paymentDate": "2025-12-02",
+      "paymentMethod": "Cash",
+      "courseId": "bsc-economics",
+      "course": "Bachelor of Science in Economics",
+      "semester": "1",
+      "receiptNumber": "RCP1764656590199",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
+      "status": "Completed"
+    },
+    {
+      "id": "44f0",
+      "studentId": "f55d",
+      "studentName": "Jane Smith",
+      "rollNumber": "BOSIP-20250115-001",
+      "amount": 38000,
+      "paymentDate": "2025-12-02",
+      "paymentMethod": "Cash",
+      "courseId": "bsc-physics",
+      "course": "Bachelor of Science in Physics",
+      "semester": "1",
+      "receiptNumber": "RCP1764656890828",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
+      "status": "Completed"
+    },
+    {
+      "id": "b260",
+      "studentId": "0f98",
+      "studentName": "John Doe",
+      "rollNumber": "BOSICS-20251120-002",
+      "amount": 50000,
+      "paymentDate": "2025-12-02",
+      "paymentMethod": "Cash",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "1",
+      "receiptNumber": "RCP1764657022603",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
+      "status": "Completed"
+    },
+    {
+      "id": "4749",
+      "studentId": "a451",
+      "studentName": "John Doe",
+      "rollNumber": "BOSICS-20251204-001",
+      "amount": 50000,
+      "paymentDate": "2025-12-04",
+      "paymentMethod": "Cash",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "1",
+      "receiptNumber": "RCP1764845603002",
+      "transactionId": null,
+      "referenceNumber": null,
+      "bankName": null,
+      "remarks": null,
+      "status": "Completed"
+    },
+    {
+      "id": "3414",
+      "studentId": "6f90",
+      "studentName": "Jane Smith",
+      "rollNumber": "BOSICS-20251204-001-1",
+      "amount": 50000,
+      "paymentDate": "2025-12-04",
+      "paymentMethod": "Cash",
+      "courseId": "bsc-cs",
+      "course": "Bachelor of Science in Computer Science",
+      "semester": "1",
+      "receiptNumber": "RCP1764846090485",
       "transactionId": null,
       "referenceNumber": null,
       "bankName": null,

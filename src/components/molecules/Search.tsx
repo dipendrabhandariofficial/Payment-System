@@ -1,14 +1,22 @@
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { Search as SearchIcon, X as ClearIcon } from "lucide-react";
-import PropTypes from "prop-types";
 
 // Debounce utility
-function debounce(fn, delay) {
-  let timeout;
-  return (...args) => {
+function debounce(fn: Function, delay: number) {
+  let timeout: number | undefined;
+  return (...args: any[]) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => fn(...args), delay);
   };
+}
+interface SearchBarProps {
+  label: string;
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+  id?: string;
+  delay?: number;
 }
 
 const SearchBar = ({
@@ -18,8 +26,8 @@ const SearchBar = ({
   placeholder = "Search...",
   className = "",
   id = "search-input",
-  delay = 300, // debounce delay
-}) => {
+  delay = 300,
+}: SearchBarProps) => {
   const [internalValue, setInternalValue] = useState(searchTerm);
 
   // Sync internal value with external searchTerm changes
@@ -30,16 +38,16 @@ const SearchBar = ({
   // Debounced setter with cleanup
   const debouncedSetSearch = useMemo(
     () =>
-      debounce((value) => {
+      debounce((value: string) => {
         setSearchTerm(value);
       }, delay),
     [setSearchTerm, delay]
   );
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setInternalValue(value); // update UI immediately
-    debouncedSetSearch(value); // update parent state after debounce
+    setInternalValue(value);
+    debouncedSetSearch(value);
   };
 
   const clearInput = useCallback(() => {
@@ -48,7 +56,7 @@ const SearchBar = ({
   }, [setSearchTerm]);
 
   return (
-    <div className={` ${className}`}> 
+    <div className={` ${className}`}>
       {label && (
         <label
           htmlFor={id}
@@ -59,11 +67,11 @@ const SearchBar = ({
       )}
       <div className="relative">
         {/* Search Icon */}
-        <SearchIcon 
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" 
+        <SearchIcon
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none"
           aria-hidden="true"
         />
-        
+
         {/* Input */}
         <input
           id={id}
@@ -78,7 +86,7 @@ const SearchBar = ({
             placeholder-gray-400 dark:placeholder-gray-500 text-gray-700"
           aria-label={placeholder}
         />
-        
+
         {/* Clear Button */}
         {internalValue && (
           <button
@@ -95,16 +103,6 @@ const SearchBar = ({
       </div>
     </div>
   );
-};
-
-SearchBar.propTypes = {
-  label: PropTypes.string,
-  searchTerm: PropTypes.string.isRequired,
-  setSearchTerm: PropTypes.func.isRequired,
-  placeholder: PropTypes.string,
-  className: PropTypes.string,
-  id: PropTypes.string,
-  delay: PropTypes.number,
 };
 
 export default SearchBar;

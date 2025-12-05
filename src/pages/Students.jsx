@@ -12,6 +12,8 @@ import SearchBar from "../components/molecules/Search";
 import ConfirmDialog from "../components/molecules/ConfirmDialog";
 import { Button } from "@dipendrabhandari/react-ui-library";
 import useBoolean from "../hooks/useBoolean";
+import useStudentFilters from "../hooks/useStudentFilters";
+import useStudentFormLogic from "../hooks/useStudentFormLogic";
 import {
   useStudents,
   useCreateStudent,
@@ -33,63 +35,62 @@ import {
   X,
   GraduationCap,
 } from "lucide-react";
-import * as XLSX from "xlsx";
 import {
-  courses as initialCourses,
-  generateSemesterFees,
-} from "../data/courses";
+  formatCurrency,
+  exportStudentsToExcel,
+  generateRollNumber,
+} from "../utils/studentUtils";
+import { courses as initialCourses } from "../data/courses";
 
 const Students = () => {
-  // const [students, setStudents] = useState([]);
-  // const [loading, setLoading] = useState(true);
-  const [filteredStudents, setFilteredStudents] = useState([]);
-
   // Boolean states using useBoolean hook for cleaner state management
-  const [showModal, { open: openModal, close: closeModal }] = useBoolean();
-  const [showViewModal, { open: openViewModal, close: closeViewModal }] =
+  const [showModal, { on: openModal, off: closeModal }] = useBoolean();
+  const [showViewModal, { on: openViewModal, off: closeViewModal }] =
     useBoolean();
-  const [showEditModal, { open: openEditModal, close: closeEditModal }] =
+  const [showEditModal, { on: openEditModal, off: closeEditModal }] =
     useBoolean();
   const [
     showBulkImportModal,
-    { open: openBulkImportModal, close: closeBulkImportModal },
+    { on: openBulkImportModal, off: closeBulkImportModal },
   ] = useBoolean();
+
   const [
     showSemesterUpgradeModal,
-    { open: openSemesterUpgradeModal, close: closeSemesterUpgradeModal },
+    { on: openSemesterUpgradeModal, off: closeSemesterUpgradeModal },
   ] = useBoolean();
   const [showBulkActionPopup, bulkActionPopupActions] = useBoolean();
   const [
     showConfirmDialog,
-    { open: openConfirmDialog, close: closeConfirmDialog },
+    { on: openConfirmDialog, off: closeConfirmDialog },
   ] = useBoolean();
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    rollNumber: "",
-    email: "",
-    phone: "",
-    address: "",
-    guardianName: "",
-    guardianPhone: "",
-    guardianRelation: "",
-    admissionDate: new Date().toISOString().split("T")[0],
-    courseId: "",
-    course: "",
-    semester: "1",
-    totalFees: "",
-    semesterFees: [],
-  });
-  const [selectedCourse, setSelectedCourse] = useState();
-
   const { data: students = [], isLoading } = useStudents();
-  console.log("🚀 ~ Students ~ students:", students);
   const { data: payments = [], isLoading: paymentsLoading } = usePayments();
+
+  // Helper function to get courses from localStorage
+  function getCourses() {
+    const savedCourses = localStorage.getItem("courses");
+    return savedCourses ? JSON.parse(savedCourses) : initialCourses;
+  }
+
+  const courses = getCourses();
+
+  // Use custom hooks for filtering and form logic
+  const { searchTerm, setSearchTerm, filteredStudents } =
+    useStudentFilters(students);
+
+  const {
+    formData,
+    selectedCourse,
+    setSelectedCourse,
+    handleChange,
+    resetForm,
+    setFormDataForEdit,
+  } = useStudentFormLogic(courses, students);
 
   const createStudent = useCreateStudent();
   const updateStudentMutation = useUpdateStudent();
@@ -98,115 +99,12 @@ const Students = () => {
   const semesterUpgradeMutation = useSemesterUpgrade();
   const bulkImport = useBulkImportStudents();
 
-  const getCourses = () => {
-    const savedCourses = localStorage.getItem("courses");
-    return savedCourses ? JSON.parse(savedCourses) : initialCourses;
-  };
-
-  const courses = getCourses();
-
-  useEffect(() => {
-    const filtered = students.filter(
-      (student) =>
-        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.course.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredStudents(filtered);
-  }, [searchTerm, students]);
-
-  // Generate unique roll number
-  const generateRollNumber = (courseName, admissionDate) => {
-    if (!courseName || !admissionDate) return "";
-
-    // Extract course code from course name (first letters of each word)
-    const courseCode = courseName
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase();
-
-    // Format date as YYYYMMDD
-    const date = new Date(admissionDate);
-    const dateCode = `${date.getFullYear()}${String(
-      date.getMonth() + 1
-    ).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}`;
-
-    // Find existing roll numbers with same course and date pattern
-    const similarRolls = students.filter((s) =>
-      s.rollNumber?.startsWith(`${courseCode}-${dateCode}`)
-    );
-
-    // Generate sequential number
-    const nextNum = String(similarRolls.length + 1).padStart(3, "0");
-
-    return `${courseCode}-${dateCode}-${nextNum}`;
-  };
-
   const handleBulkImport = async (studentsData) => {
     try {
       await bulkImport.mutateAsync(studentsData);
       return true;
     } catch (error) {
       throw error;
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    // Handle course selection from dropdown
-    if (name === "courseId") {
-      const selectedId = String(value);
-      const course = courses.find((c) => c.id === selectedId);
-
-      if (course) {
-        setSelectedCourse(course);
-
-        const semesterFees = generateSemesterFees(
-          course,
-          formData.admissionDate || new Date().toISOString().split("T")[0]
-        );
-
-        // Generate roll number when course is selected
-        const rollNumber = generateRollNumber(
-          course.name,
-          formData.admissionDate || new Date().toISOString().split("T")[0]
-        );
-
-        setFormData({
-          ...formData,
-          courseId: selectedId,
-          course: course.name,
-          semester: formData.semester || "1",
-          totalFees: String(course.totalFees),
-          semesterFees,
-          rollNumber,
-        });
-      } else {
-        setSelectedCourse(null);
-        setFormData({
-          ...formData,
-          courseId: "",
-          course: "",
-          totalFees: "",
-          semesterFees: [],
-          rollNumber: "",
-        });
-      }
-    } else if (name === "admissionDate" && selectedCourse) {
-      // Regenerate semester fees and roll number if admission date changes
-      const semesterFees = generateSemesterFees(selectedCourse, value);
-      const rollNumber = generateRollNumber(selectedCourse.name, value);
-
-      setFormData({
-        ...formData,
-        [name]: value,
-        semesterFees,
-        rollNumber,
-      });
-    } else {
-      setFormData({ ...formData, [name]: value });
     }
   };
 
@@ -239,23 +137,7 @@ const Students = () => {
       };
       await createStudent.mutateAsync(studentData);
       closeModal();
-      setFormData({
-        name: "",
-        rollNumber: "",
-        email: "",
-        phone: "",
-        address: "",
-        guardianName: "",
-        guardianPhone: "",
-        guardianRelation: "",
-        admissionDate: new Date().toISOString().split("T")[0],
-        courseId: "",
-        course: "",
-        semester: "1",
-        totalFees: "",
-        semesterFees: [],
-      });
-      setSelectedCourse(null);
+      resetForm();
     } catch (error) {
       console.error("Error in handleSubmit:", error);
     } finally {
@@ -266,23 +148,7 @@ const Students = () => {
   const handleCloseModal = () => {
     if (!submitting) {
       closeModal();
-      setFormData({
-        name: "",
-        rollNumber: "",
-        email: "",
-        phone: "",
-        address: "",
-        guardianName: "",
-        guardianPhone: "",
-        guardianRelation: "",
-        admissionDate: new Date().toISOString().split("T")[0],
-        courseId: "",
-        course: "",
-        semester: "1",
-        totalFees: "",
-        semesterFees: [],
-      });
-      setSelectedCourse(null);
+      resetForm();
     }
   };
 
@@ -300,32 +166,7 @@ const Students = () => {
       );
     }
 
-    const studentCourse = student.courseId
-      ? courses.find((c) => c.id === student.courseId)
-      : null;
-    if (studentCourse) {
-      setSelectedCourse(studentCourse);
-    } else {
-      setSelectedCourse(null);
-    }
-
-    setFormData({
-      name: student.name,
-      rollNumber: student.rollNumber,
-      email: student.email,
-      phone: student.phone,
-      address: student.address || "",
-      guardianName: student.guardianName || "",
-      guardianPhone: student.guardianPhone || "",
-      guardianRelation: student.guardianRelation || "",
-      admissionDate:
-        student.admissionDate || new Date().toISOString().split("T")[0],
-      courseId: student.courseId || "",
-      course: student.course || "",
-      semester: student.semester || "1",
-      totalFees: student.totalFees.toString(),
-      semesterFees: student.semesterFees || [],
-    });
+    setFormDataForEdit(student);
     openEditModal();
   };
 
@@ -368,23 +209,7 @@ const Students = () => {
       });
       closeEditModal();
       setSelectedStudent(null);
-      setSelectedCourse(null);
-      setFormData({
-        name: "",
-        rollNumber: "",
-        email: "",
-        phone: "",
-        address: "",
-        guardianName: "",
-        guardianPhone: "",
-        guardianRelation: "",
-        admissionDate: new Date().toISOString().split("T")[0],
-        courseId: "",
-        course: "",
-        semester: "1",
-        totalFees: "",
-        semesterFees: [],
-      });
+      resetForm();
     } catch (error) {
       console.error("Error in handleUpdateSubmit:", error);
     } finally {
@@ -396,32 +221,8 @@ const Students = () => {
     if (!submitting) {
       closeEditModal();
       setSelectedStudent(null);
-      setSelectedCourse(null);
-      setFormData({
-        name: "",
-        rollNumber: "",
-        email: "",
-        phone: "",
-        address: "",
-        guardianName: "",
-        guardianPhone: "",
-        guardianRelation: "",
-        admissionDate: new Date().toISOString().split("T")[0],
-        courseId: "",
-        course: "",
-        semester: "1",
-        totalFees: "",
-        semesterFees: [],
-      });
+      resetForm();
     }
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(amount);
   };
 
   // Handle checkbox selection
@@ -485,64 +286,9 @@ const Students = () => {
         return;
       }
 
-      // Prepare data for export
-      const exportData = selectedStudentData.map((student) => ({
-        "Roll Number": student.rollNumber || "",
-        Name: student.name || "",
-        Email: student.email || "",
-        Phone: student.phone || "",
-        Course: student.course || "",
-        Semester: student.semester || "",
-        "Total Fees": student.totalFees || 0,
-        "Paid Fees": student.paidFees || 0,
-        "Pending Fees": student.pendingFees || 0,
-        "Guardian Name": student.guardianName || "",
-        "Guardian Phone": student.guardianPhone || "",
-        "Guardian Relation": student.guardianRelation || "",
-        Address: student.address || "",
-        "Admission Date": student.admissionDate || "",
-      }));
-
-      // Create workbook and worksheet
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(exportData);
-
-      // Set column widths for better readability
-      const columnWidths = [
-        { wch: 15 }, // Roll Number
-        { wch: 20 }, // Name
-        { wch: 25 }, // Email
-        { wch: 15 }, // Phone
-        { wch: 30 }, // Course
-        { wch: 10 }, // Semester
-        { wch: 12 }, // Total Fees
-        { wch: 12 }, // Paid Fees
-        { wch: 12 }, // Pending Fees
-        { wch: 20 }, // Guardian Name
-        { wch: 15 }, // Guardian Phone
-        { wch: 15 }, // Guardian Relation
-        { wch: 30 }, // Address
-        { wch: 15 }, // Admission Date
-      ];
-      ws["!cols"] = columnWidths;
-
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, "Students");
-
-      // Generate file name with current date
-      const fileName = `students_export_${
-        new Date().toISOString().split("T")[0]
-      }.xlsx`;
-
-      // Save file with explicit bookType
-      XLSX.writeFile(wb, fileName, { bookType: "xlsx", type: "binary" });
-
+      const fileName = exportStudentsToExcel(selectedStudentData);
       console.log("Export successful:", fileName);
-
-      // Show success message
       toast.success("Export completed successfully!");
-
-      // Clear selection
       setSelectedStudents([]);
     } catch (error) {
       console.error("Error exporting students:", error);
@@ -587,27 +333,36 @@ const Students = () => {
       title="Students"
       subtitle={"Get the information of the students"}
       actionButton={
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap md:inline-flex items-center gap-2 sm:gap-3">
           <Button
-            onClick={openBulkImportModal}
-            leftIcon={<Upload className="w-5 h-5" />}
+            onClick={() => {
+              console.log("hello");
+              openBulkImportModal();
+            }}
+            leftIcon={<Upload className="w-4 h-4 sm:w-5 sm:h-5" />}
             colorScheme="green"
+            className="text-xs sm:text-sm px-2 py-1.5 sm:px-4 sm:py-2"
           >
-            <span className="hidden sm:inline">Bulk Import</span>
+            <span className="hidden md:inline">Bulk Import</span>
+            {/* <span className="md:hidden">Import</span> */}
           </Button>
           <Button
             onClick={openSemesterUpgradeModal}
-            leftIcon={<GraduationCap className="w-5 h-5" />}
+            leftIcon={<GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />}
             colorScheme="blue"
+            className="text-xs sm:text-sm px-2 py-1.5 sm:px-4 sm:py-2"
           >
-            <span className="hidden sm:inline">Semester Upgrade</span>
+            <span className="hidden md:inline">Semester Upgrade</span>
+            {/* <span className="md:hidden">Upgrade</span> */}
           </Button>
           <Button
             onClick={openModal}
-            leftIcon={<Plus className="w-5 h-5" />}
+            leftIcon={<Plus className="w-4 h-4 sm:w-5 sm:h-5" />}
             colorScheme="gray"
+            className="text-xs sm:text-sm px-2 py-1.5 sm:px-4 sm:py-2"
           >
-            <span className="hidden sm:inline">Add Student</span>
+            <span className="hidden md:inline">Add Student</span>
+            {/* <span className="md:hidden">Add</span> */}
           </Button>
         </div>
       }
@@ -620,8 +375,7 @@ const Students = () => {
           className="lg:w-[50%]"
         />
       </div>
-      fdsafawe
-      {/* ✅ REACT QUERY: DataTable uses isLoading from useQuery */}
+      {/*  REACT QUERY: DataTable uses isLoading from useQuery */}
       <DataTable
         columns={tableColumns}
         data={filteredStudents}
@@ -722,7 +476,7 @@ const Students = () => {
                     onView={() => handleView(student)}
                     onEdit={() => handleEdit(student)}
                     onDelete={() => handleDelete(student)}
-                    className="right-3 bottom-0"
+                    className=""
                   />
                 </div>
               </div>

@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
-import MainLayout from "../layouts/Mainlayout.jsx";
+import MainLayout from "../layouts/Mainlayout";
 
 import Login from "../pages/Login.jsx";
 import Register from "../pages/Register.jsx";
@@ -13,6 +13,7 @@ import AddPayment from "../pages/AddPayement.jsx";
 import Reports from "../pages/Reports.jsx";
 import Courses from "../pages/Courses.jsx";
 import DuePayments from "../pages/DuePayments.jsx";
+import NotFound from "../pages/NotFound";
 
 const Approute: React.FC = () => {
   return (
@@ -53,6 +54,9 @@ const Approute: React.FC = () => {
         <Route path="/courses" element={<Courses />} />
         <Route path="/due-payments" element={<DuePayments />} />
       </Route>
+
+      {/* 404 Catch-all Route */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

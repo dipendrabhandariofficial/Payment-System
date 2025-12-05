@@ -25,6 +25,7 @@ import LoadingSpinner from "../components/atoms/LoadingSpinner";
 import PageLayout from "../components/templates/PageLayout";
 import SearchBar from "../components/molecules/Search";
 import { useBoolean } from "../hooks/useBoolean";
+import { useTemporaryMessage } from "../hooks/useTemporaryMessage";
 
 const AddPayment = () => {
   const { data: students = [], isLoading: studentsLoading } = useStudents();
@@ -56,9 +57,9 @@ const AddPayment = () => {
     remarks: "",
   });
 
-  const [success, setSuccess] = useBoolean(false);
-  const [error, setError] = useState("");
-  const [showExtra, setShowExtra] = useState(false);
+  const [success, { on: onSuccess, off: offSuccess }] = useBoolean(false);
+  const [error, setError] = useTemporaryMessage();
+  const [showExtra, { on: onShowExtra, off: offShowExtra }] = useBoolean(false);
 
   const loading = studentsLoading || paymentsLoading;
 
@@ -214,41 +215,44 @@ const AddPayment = () => {
     }).format(amount);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess(false);
-
-    if (!selectedStudent) return setError("Please select a student");
-    const amount = parseFloat(formData.amount);
-    if (!amount || amount <= 0) return setError("Enter a valid amount");
-
-    const availableSemesters = getAvailableSemesters(selectedStudent);
-    const selectedSemesterNum = parseInt(formData.semester);
-
-    if (!availableSemesters.length) {
-      setError("All semester fees are already paid!");
-
-      setTimeout(() => {
-        setError(""); // Clear after 3 seconds
-      }, 3000);
-
-      return;
-    }
-
-    const payableSemester = availableSemesters.find(
-      (s) => s.semester === selectedSemesterNum
-    );
-    if (!payableSemester)
-      return setError(`Pay Semester ${availableSemesters[0].semester} first.`);
-
-    if (amount > payableSemester.remainingAmount)
-      return setError(
-        `Amount exceeds remaining fees: ${formatCurrency(
-          payableSemester.remainingAmount
-        )}`
-      );
-
     try {
+      e.preventDefault();
+      setError("");
+      offSuccess();
+
+      if (!selectedStudent) return setError("Please select a student");
+      const amount = parseFloat(formData.amount);
+      if (!amount || amount <= 0) return setError("Enter a valid amount");
+
+      const availableSemesters = getAvailableSemesters(selectedStudent);
+      const selectedSemesterNum = parseInt(formData.semester);
+
+      if (!availableSemesters.length) {
+        setError("All semester fees are already paid!");
+        return;
+      }
+
+      const payableSemester = availableSemesters.find(
+        (s) => s.semester === selectedSemesterNum
+      );
+      if (!payableSemester) {
+        setError(`Pay Semester ${availableSemesters[0].semester} first.`);
+        return;
+      }
+
+      if (amount > payableSemester.remainingAmount) {
+        setTimeout(() => {
+          setError(""); // Clear after 3 seconds
+        }, 3000);
+        setError(
+          `Amount exceeds remaining fees: ${formatCurrency(
+            payableSemester.remainingAmount
+          )}`
+        );
+
+        return;
+      }
+
       const paymentData = {
         studentId: selectedStudent.id,
         studentName: selectedStudent.name,
@@ -281,13 +285,13 @@ const AddPayment = () => {
         data: updatedStudent,
       });
 
-      setSuccess(true);
+      onSuccess();
       resetPaymentForm();
       setSelectedStudent(null);
       setSelectedPaymentCourse(null);
-      setTimeout(() => setSuccess(false), 3000);
+      setTimeout(() => offSuccess(), 3000);
     } catch (err) {
-      setError("Failed to process payment");
+      setError(err.message || "Failed to process payment");
       setTimeout(() => setError(""), 3000);
     }
   };

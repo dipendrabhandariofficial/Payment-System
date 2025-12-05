@@ -1,11 +1,16 @@
-import React from "react";
+interface QuickStatProps {
+  title: string;
+  description?: string;
+  value: string | number;
+  className?: string;
+}
 
-const QuickStat = ({ 
-  title, 
-  description, 
-  value, 
-  className = "" 
-}) => {
+const QuickStat = ({
+  title,
+  description,
+  value,
+  className = "",
+}: QuickStatProps) => {
   return (
     <div
       className={`flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg ${className}`}

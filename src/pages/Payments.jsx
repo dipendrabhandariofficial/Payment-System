@@ -17,6 +17,7 @@ import ReceiptModal from "../components/organisms/ReceiptModal";
 import DataTable from "../components/organisms/DataTable";
 import LoadingSpinner from "../components/atoms/LoadingSpinner";
 import PageLayout from "../components/templates/PageLayout";
+import StatCard from "../components/molecules/StatCard";
 
 const Payments = () => {
   const [filteredPayments, setFilteredPayments] = useState([]);
@@ -116,8 +117,8 @@ const Payments = () => {
     >
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center justify-between">
+        {/* <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          {/* <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                 Total Payments
@@ -129,8 +130,14 @@ const Payments = () => {
             <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
               <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
+        <StatCard
+          title="Total Payments"
+          icon={FileText}
+          value={filteredPayments.length}
+          className="col-span-1 md:col-span-2 lg:col-span-1"
+        />
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center justify-between">
