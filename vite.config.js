@@ -21,4 +21,18 @@ export default defineConfig({
       '@data': path.resolve(__dirname, './src/data'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'recharts': ['recharts'],
+          'pdf-utils': ['jspdf', 'jspdf-autotable', 'html-to-image'],
+          'xlsx': ['xlsx'],
+          'tanstack': ['@tanstack/react-query', '@tanstack/react-virtual'],
+          'ui-libs': ['lucide-react', '@dipendrabhandari/react-ui-library'],
+        },
+      },
+    },
+  },
 })

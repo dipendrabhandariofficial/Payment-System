@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-const PageLayout = ({ children, title, subtitle, actionButton }) => {
+const PageLayout = ({ children, title, subtitle, actionButton = null }) => {
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#101828] p-6">
       {(title || actionButton) && (
@@ -12,11 +12,15 @@ const PageLayout = ({ children, title, subtitle, actionButton }) => {
                 {title}
               </h1>
               {subtitle && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {subtitle}
+                </p>
               )}
             </div>
           )}
-          {actionButton && <div className="w-full sm:w-auto">{actionButton}</div>}
+          {actionButton && (
+            <div className="w-full sm:w-auto">{actionButton}</div>
+          )}
         </div>
       )}
       {children}

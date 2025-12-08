@@ -14,6 +14,7 @@ import Reports from "../pages/Reports.jsx";
 import Courses from "../pages/Courses.jsx";
 import DuePayments from "../pages/DuePayments.jsx";
 import ZodPractice from "../pages/ZodPractice";
+import VirtualizationDemo from "../pages/VirtualizationDemo";
 import NotFound from "../pages/NotFound";
 
 const Approute: React.FC = () => {
@@ -55,6 +56,7 @@ const Approute: React.FC = () => {
         <Route path="/courses" element={<Courses />} />
         <Route path="/due-payments" element={<DuePayments />} />
         <Route path="/zod-practice" element={<ZodPractice />} />
+        <Route path="/virtualization" element={<VirtualizationDemo />} />
       </Route>
 
       {/* 404 Catch-all Route */}
