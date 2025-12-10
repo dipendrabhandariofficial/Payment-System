@@ -74,7 +74,7 @@ export interface User {
   name: string;
   email: string;
   password?: string;
-  role?: "admin" | "staff" | "user";
+  role?: UserRole;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -115,4 +115,4 @@ export type SortOrder = "asc" | "desc";
 export type FilterType = "all" | "overdue" | "upcoming";
 export type PaymentMethod = "Cash" | "Online" | "Check" | "Card";
 export type PaymentStatus = "Pending" | "Completed" | "Failed";
-export type UserRole = "admin" | "staff" | "user";
+export type UserRole = "admin" | "staff" | "user" | "accountant";

@@ -16,6 +16,7 @@ import DuePayments from "../pages/DuePayments.jsx";
 import ZodPractice from "../pages/ZodPractice";
 import VirtualizationDemo from "../pages/VirtualizationDemo";
 import NotFound from "../pages/NotFound";
+import Settings from "../pages/Settings";
 
 const Approute: React.FC = () => {
   return (
@@ -57,6 +58,14 @@ const Approute: React.FC = () => {
         <Route path="/due-payments" element={<DuePayments />} />
         <Route path="/zod-practice" element={<ZodPractice />} />
         <Route path="/virtualization" element={<VirtualizationDemo />} />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       {/* 404 Catch-all Route */}

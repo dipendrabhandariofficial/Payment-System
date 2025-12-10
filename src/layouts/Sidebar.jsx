@@ -1,4 +1,3 @@
-import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -10,9 +9,11 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Settings,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
+import { NavLink } from "react-router-dom";
 
 const Sidebar = ({ open, onClose, isCollapsed, toggleCollapse }) => {
   const { t } = useTranslation();
@@ -27,6 +28,14 @@ const Sidebar = ({ open, onClose, isCollapsed, toggleCollapse }) => {
     { name: t("sidebar.duepayments"), path: "/due-payments", icon: Banknote },
     { name: t("sidebar.reports"), path: "/reports", icon: FileText },
   ];
+
+  if (user?.role === "admin") {
+    menuItems.push({
+      name: "Settings", // TODO: Add translation key 'sidebar.settings'
+      path: "/settings",
+      icon: Settings,
+    });
+  }
 
   return (
     <>
